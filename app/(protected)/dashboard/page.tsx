@@ -1,62 +1,81 @@
+import Link from 'next/link';
+import { CalendarDays, HeartHandshake, Megaphone, UserRound } from 'lucide-react';
 import { requireChurch } from '@/lib/auth';
 
-export default async function Dashboard() {
-  const { supabase, churchId } = await requireChurch();
+export default async function MemberDashboard() {
+  const { supabase, churchId, user, churchName, profileName, roleKey } = await requireChurch();
+  const now = new Date().toISOString();
 
-  const [members, visitors, cells, events, transactions] = await Promise.all([
-    supabase.from('church_members').select('*', { count: 'exact', head: true }).eq('church_id', churchId).neq('status', 'inactive'),
-    supabase.from('visitors').select('*', { count: 'exact', head: true }).eq('church_id', churchId),
-    supabase.from('cells').select('*', { count: 'exact', head: true }).eq('church_id', churchId).eq('active', true),
-    supabase.from('events').select('id,title,starts_at,status').eq('church_id', churchId).gte('starts_at', new Date().toISOString()).order('starts_at').limit(5),
-    supabase.from('transactions').select('direction,amount').eq('church_id', churchId),
+  const [events, announcements, notifications, member] = await Promise.all([
+    supabase.from('events').select('id,title,description,starts_at,address,status').eq('church_id', churchId).gte('starts_at', now).order('starts_at').limit(4),
+    supabase.from('announcements').select('id,title,body,published_at').eq('church_id', churchId).eq('published', true).order('published_at', { ascending: false }).limit(4),
+    supabase.from('notifications').select('id,title,body,created_at,read_at').eq('church_id', churchId).eq('user_id', user.id).order('created_at', { ascending: false }).limit(4),
+    supabase.from('church_members').select('full_name,status,joined_at,baptism_date').eq('church_id', churchId).eq('auth_user_id', user.id).maybeSingle(),
   ]);
-
-  const balance = (transactions.data || []).reduce(
-    (sum, row) => sum + (row.direction === 'income' ? Number(row.amount) : -Number(row.amount)),
-    0,
-  );
 
   return (
     <>
-      <header className="topbar">
-        <div className="title"><h1>Visão geral</h1><p>Indicadores operacionais da sua igreja.</p></div>
+      <header className="hero hero-member">
+        <div>
+          <span className="eyebrow">Olá, {profileName}</span>
+          <h1>Bem-vindo à {churchName}</h1>
+          <p>Acompanhe o que está acontecendo na sua comunidade e encontre seus próximos passos.</p>
+        </div>
+        {roleKey !== 'member' && <Link className="btn secondary-light" href="/admin">Abrir administração</Link>}
       </header>
 
-      <section className="grid kpis">
-        <div className="card kpi"><span className="muted">Membros ativos</span><strong>{members.count || 0}</strong></div>
-        <div className="card kpi"><span className="muted">Visitantes</span><strong>{visitors.count || 0}</strong></div>
-        <div className="card kpi"><span className="muted">Células ativas</span><strong>{cells.count || 0}</strong></div>
-        <div className="card kpi"><span className="muted">Saldo</span><strong>{balance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong></div>
+      <section className="quick-grid">
+        <div className="quick-card"><span className="quick-icon"><UserRound size={20} /></span><div><small>Seu vínculo</small><strong>{member.data?.status ? String(member.data.status) : 'Comunidade'}</strong></div></div>
+        <div className="quick-card"><span className="quick-icon"><CalendarDays size={20} /></span><div><small>Próximos eventos</small><strong>{events.data?.length || 0}</strong></div></div>
+        <div className="quick-card"><span className="quick-icon"><Megaphone size={20} /></span><div><small>Novos avisos</small><strong>{announcements.data?.length || 0}</strong></div></div>
+        <div className="quick-card"><span className="quick-icon"><HeartHandshake size={20} /></span><div><small>Precisa de apoio?</small><strong>Envie um pedido</strong></div></div>
       </section>
 
-      <section className="grid two" style={{ marginTop: 16 }}>
-        <div className="card">
-          <div className="section-head"><h2>Próximos eventos</h2></div>
-          {events.data?.length ? (
-            <div className="table-wrap">
-              <table className="table">
-                <thead><tr><th>Evento</th><th>Data</th><th>Status</th></tr></thead>
-                <tbody>
-                  {events.data.map((event) => (
-                    <tr key={event.id}>
-                      <td>{event.title}</td>
-                      <td>{new Date(event.starts_at).toLocaleString('pt-BR')}</td>
-                      <td><span className="badge">{event.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <section className="content-grid">
+        <div className="stack">
+          <section className="card">
+            <div className="section-head"><div><span className="eyebrow">Agenda</span><h2>Próximos eventos</h2></div><Link href="/events">Ver todos</Link></div>
+            <div className="event-list">
+              {events.data?.length ? events.data.map((event) => (
+                <article className="event-item" key={event.id}>
+                  <div className="date-box"><strong>{new Date(event.starts_at).getDate()}</strong><span>{new Date(event.starts_at).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span></div>
+                  <div><h3>{event.title}</h3><p>{new Date(event.starts_at).toLocaleString('pt-BR', { dateStyle: 'medium', timeStyle: 'short' })}{event.address ? ' • ' + event.address : ''}</p></div>
+                </article>
+              )) : <div className="empty compact">Nenhum evento futuro publicado.</div>}
             </div>
-          ) : <div className="empty">Nenhum evento futuro cadastrado.</div>}
+          </section>
+
+          <section className="card">
+            <div className="section-head"><div><span className="eyebrow">Comunidade</span><h2>Avisos da igreja</h2></div></div>
+            <div className="announcement-list">
+              {announcements.data?.length ? announcements.data.map((item) => (
+                <article className="announcement" key={item.id}><h3>{item.title}</h3><p>{item.body}</p><small>{new Date(item.published_at).toLocaleDateString('pt-BR')}</small></article>
+              )) : <div className="empty compact">Quando a liderança publicar um aviso, ele aparecerá aqui.</div>}
+            </div>
+          </section>
         </div>
 
-        <div className="card">
-          <h2 style={{ marginTop: 0 }}>Ações rápidas</h2>
-          <div className="grid">
-            <a className="btn" href="/members/new">Novo membro</a>
-            <a className="btn secondary" href="/visitors/new">Novo visitante</a>
-          </div>
-        </div>
+        <aside className="stack">
+          <section className="card accent-card">
+            <span className="eyebrow">Cuidado pastoral</span>
+            <h2>Como podemos orar por você?</h2>
+            <p>Envie um pedido de oração. Ele fica vinculado à sua conta e pode ser tratado com privacidade.</p>
+            <form action="/api/prayer" method="post" className="form compact-form">
+              <input name="title" placeholder="Assunto do pedido" required />
+              <textarea name="body" rows={4} placeholder="Conte o que está no seu coração" required />
+              <button className="btn" type="submit">Enviar pedido</button>
+            </form>
+          </section>
+
+          <section className="card">
+            <div className="section-head"><h2>Notificações</h2></div>
+            <div className="mini-list">
+              {notifications.data?.length ? notifications.data.map((item) => (
+                <div className="mini-item" key={item.id}><strong>{item.title}</strong><span>{item.body || 'Nova atualização disponível.'}</span></div>
+              )) : <div className="empty compact">Você está em dia.</div>}
+            </div>
+          </section>
+        </aside>
       </section>
     </>
   );

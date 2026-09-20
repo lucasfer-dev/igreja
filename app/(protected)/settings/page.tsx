@@ -1,0 +1,9 @@
+import { requireChurch } from '@/lib/auth';
+import { updateChurch } from './actions';
+
+export default async function SettingsPage() {
+  const { supabase, churchId } = await requireChurch();
+  const { data: church } = await supabase.from('churches').select('name,email,phone,whatsapp,primary_color,slug,plan_key').eq('id', churchId).single();
+
+  return <><header className="topbar"><div className="title"><span className="eyebrow">Organização</span><h1>Configurações</h1><p>Identidade e contatos principais do ambiente.</p></div></header><section className="profile-grid"><div className="card profile-summary"><div className="brand-preview" style={{ background: church?.primary_color || '#0f766e' }}>{church?.name?.slice(0, 1) || 'I'}</div><h2>{church?.name}</h2><p>{church?.slug}</p><span className="badge">Plano {church?.plan_key || 'basic'}</span></div><div className="card"><h2>Dados da igreja</h2><form action={updateChurch} className="form"><div className="field"><label htmlFor="name">Nome</label><input id="name" name="name" defaultValue={church?.name || ''} required /></div><div className="form-row"><div className="field"><label htmlFor="email">E-mail</label><input id="email" name="email" type="email" defaultValue={church?.email || ''} /></div><div className="field"><label htmlFor="phone">Telefone</label><input id="phone" name="phone" defaultValue={church?.phone || ''} /></div></div><div className="form-row"><div className="field"><label htmlFor="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" defaultValue={church?.whatsapp || ''} /></div><div className="field"><label htmlFor="primaryColor">Cor principal</label><input id="primaryColor" name="primaryColor" type="color" defaultValue={church?.primary_color || '#0f766e'} /></div></div><button className="btn" type="submit">Salvar configurações</button></form></div></section></>;
+}
