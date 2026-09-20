@@ -16,7 +16,7 @@ export default async function Events() {
             <div className="event-list">{data.map(item => (
               <article className="event-item" key={item.id}>
                 <div className="date-box"><strong>{new Date(item.starts_at).getDate()}</strong><span>{new Date(item.starts_at).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></div>
-                <div><h3>{item.title}</h3><p>{new Date(item.starts_at).toLocaleString('pt-BR')}{item.address ? ' • ' + item.address : ''}{item.capacity ? ' • ' + item.capacity + ' vagas' : ''}</p></div>
+                <div><h3><a className="table-link" href={'/events/'+item.id}>{item.title}</a></h3><p>{new Date(item.starts_at).toLocaleString('pt-BR')}{item.address ? ' • ' + item.address : ''}{item.capacity ? ' • ' + item.capacity + ' vagas' : ''}</p></div>
                 <span className="badge">{item.status}</span>
               </article>
             ))}</div>
