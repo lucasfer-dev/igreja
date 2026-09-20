@@ -22,16 +22,21 @@ export default async function ChatRoomPage({params,searchParams}:{params:Promise
   const names=new Map((profiles||[]).map(p=>[p.id,p.full_name||'Membro']));
   const action=sendChatMessage.bind(null,id);
 
-  let roomMembers:{user_id:string;profiles:{full_name:string|null}|null}[]=[];
+  let roomMembers:{user_id:string;full_name:string}[]=[];
   let availableMembers:{id:string;full_name:string;auth_user_id:string|null}[]=[];
 
   if(room.room_type!=='community'&&managePermission){
     const [{data:participants},{data:allMembers}]=await Promise.all([
-      supabase.from('chat_room_members').select('user_id,profiles:user_id(full_name)').eq('church_id',churchId).eq('room_id',id).order('created_at'),
+      supabase.from('chat_room_members').select('user_id').eq('church_id',churchId).eq('room_id',id).order('created_at'),
       supabase.from('church_members').select('id,full_name,auth_user_id').eq('church_id',churchId).not('auth_user_id','is',null).neq('status','inactive').order('full_name').limit(250),
     ]);
-    roomMembers=(participants||[]) as typeof roomMembers;
-    const existing=new Set(roomMembers.map(item=>item.user_id));
+    const participantIds=(participants||[]).map(item=>item.user_id);
+    const {data:participantProfiles}=participantIds.length
+      ? await supabase.from('profiles').select('id,full_name').in('id',participantIds)
+      : {data:[] as {id:string;full_name:string|null}[]};
+    const participantNames=new Map((participantProfiles||[]).map(profile=>[profile.id,profile.full_name||'Membro']));
+    roomMembers=participantIds.map(userId=>({user_id:userId,full_name:participantNames.get(userId)||'Membro'}));
+    const existing=new Set(participantIds);
     availableMembers=(allMembers||[]).filter(member=>member.auth_user_id&&!existing.has(member.auth_user_id));
   }
 
@@ -58,7 +63,7 @@ export default async function ChatRoomPage({params,searchParams}:{params:Promise
         <div className="chat-member-list">
           {roomMembers.map(member=>{
             const remove=removeChatParticipant.bind(null,id,member.user_id);
-            return <div key={member.user_id}><span className="person-dot">{(member.profiles?.full_name||'M').slice(0,1)}</span><strong>{member.profiles?.full_name||'Membro'}</strong><form action={remove}><button type="submit" title="Remover participante"><X size={14}/></button></form></div>;
+            return <div key={member.user_id}><span className="person-dot">{member.full_name.slice(0,1)}</span><strong>{member.full_name}</strong><form action={remove}><button type="submit" title="Remover participante"><X size={14}/></button></form></div>;
           })}
         </div>
         {availableMembers.length?<form action={addChatParticipant.bind(null,id)} className="form compact-form"><div className="field"><label htmlFor="member_id">Adicionar pessoa</label><select id="member_id" name="member_id" required><option value="">Selecione</option>{availableMembers.map(member=><option value={member.id} key={member.id}>{member.full_name}</option>)}</select></div><button className="primary-submit" type="submit"><UserPlus size={15}/> Adicionar</button></form>:<p className="composer-note">Todos os membros vinculados já estão nesta sala.</p>}
