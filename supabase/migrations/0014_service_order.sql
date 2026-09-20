@@ -51,6 +51,10 @@ create index if not exists service_orders_church_scheduled_idx
   on public.service_orders(church_id, scheduled_at desc);
 create index if not exists service_orders_event_idx
   on public.service_orders(event_id);
+create index if not exists service_orders_created_by_idx
+  on public.service_orders(created_by);
+create index if not exists service_order_items_church_idx
+  on public.service_order_items(church_id);
 create index if not exists service_order_items_order_position_idx
   on public.service_order_items(order_id, position);
 create index if not exists service_order_items_responsible_idx
