@@ -3,14 +3,14 @@ import {
   Baby, CalendarDays, CircleDollarSign, Clock3, Plus, Sparkles, UserPlus,
   UserRoundPlus, UsersRound, WalletCards
 } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 function money(value:number){
   return value.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 }
 
 export default async function AdminDashboard(){
-  const {supabase,churchId,profileName}=await requireChurch();
+  const {supabase,churchId,profileName}=await requirePermission('church.manage');
   const now=new Date();
   const todayStart=new Date(now); todayStart.setHours(0,0,0,0);
   const todayEnd=new Date(now); todayEnd.setHours(23,59,59,999);
@@ -25,7 +25,7 @@ export default async function AdminDashboard(){
     supabase.from('transactions').select('direction,amount,occurred_at').eq('church_id',churchId).gte('occurred_at',monthStart.toISOString().slice(0,10)),
     supabase.from('events').select('id,title,starts_at,address').eq('church_id',churchId).gte('starts_at',now.toISOString()).order('starts_at').limit(6),
     supabase.from('events').select('id,title,starts_at,address').eq('church_id',churchId).gte('starts_at',todayStart.toISOString()).lte('starts_at',todayEnd.toISOString()).order('starts_at'),
-    supabase.from('volunteer_schedules').select('id,function_name,starts_at,status').eq('church_id',churchId).eq('status','pending').gte('starts_at',now.toISOString()).limit(10),
+    supabase.from('volunteer_schedules').select('id,function_name,starts_at,status').eq('church_id',churchId).gte('starts_at',now.toISOString()).limit(100),
     supabase.from('kids_checkins').select('id').eq('church_id',churchId).is('checked_out_at',null),
     supabase.from('visitors').select('id,full_name,stage').eq('church_id',churchId).in('stage',['new','contacted']).order('created_at',{ascending:false}).limit(10),
     supabase.from('church_members').select('id,full_name,status,created_at').eq('church_id',churchId).order('created_at',{ascending:false}).limit(5),
@@ -43,7 +43,7 @@ export default async function AdminDashboard(){
     return {label:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][i],count};
   });
   const max=Math.max(1,...months.map(m=>m.count));
-  const today=todayEvents.data?.[0]||upcomingEvents.data?.[0];
+  const today=todayEvents.data?.[0]||upcomingEvents.data?.[0];\n  const scheduleRows=pendingSchedules.data||[];\n  const pendingCount=scheduleRows.filter(s=>s.status==='pending').length;\n  const confirmedCount=scheduleRows.filter(s=>s.status==='confirmed').length;
 
   return <>
     <header className="ref-heading">
@@ -61,16 +61,16 @@ export default async function AdminDashboard(){
 
     <div className="ref-section-label">HOJE NA IGREJA</div>
     <section className="ref-today-cards">
-      <article><span><CalendarDays size={14}/> {today?.title||'Culto da noite'}</span><strong>{today?.starts_at?new Date(today.starts_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</strong></article>
+      <article><span><CalendarDays size={14}/> {today?.title||'Nenhum evento agendado'}</span><strong>{today?.starts_at?new Date(today.starts_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'}</strong></article>
       <article><span><Baby size={14}/> Kids</span><strong>{activeKids.data?.length||0}</strong><small>crianças dentro agora</small></article>
-      <article><span><UsersRound size={14}/> Escalas</span><div><strong>{Math.max(0,27-(pendingSchedules.data?.length||0))}</strong><small>confirmadas</small><strong className="amber">{pendingSchedules.data?.length||0}</strong><small>pendentes</small></div></article>
+      <article><span><UsersRound size={14}/> Escalas</span><div><strong>{confirmedCount}</strong><small>confirmadas</small><strong className="amber">{pendingCount}</strong><small>pendentes</small></div></article>
       <article><span><Sparkles size={14}/> Visitantes</span><strong>{pendingVisitors.data?.length||0}</strong><small>aguardando acompanhamento</small></article>
     </section>
 
     <section className="ref-dashboard-grid">
       <div className="ref-card ref-attention">
         <div className="ref-card-title">PRECISA DA SUA ATENÇÃO</div>
-        <Link href="/volunteers"><Clock3 size={12}/><span>Voluntários não confirmados entre voluntários</span><b>{pendingSchedules.data?.length||0}</b></Link>
+        <Link href="/volunteers"><Clock3 size={12}/><span>Escalas aguardando confirmação</span><b>{pendingCount}</b></Link>
         <Link href="/visitors"><Sparkles size={12}/><span>Visitantes recentes sem contato</span><b>{pendingVisitors.data?.length||0}</b></Link>
         <Link href="/kids"><Baby size={12}/><span>Crianças presentes aguardando checkout</span><b>{activeKids.data?.length||0}</b></Link>
         <Link href="/finance"><WalletCards size={12}/><span>Revisar movimentações financeiras do mês</span><b>{transactions.data?.length||0}</b></Link>
