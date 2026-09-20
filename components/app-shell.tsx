@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import {
   Bell, BookOpen, Boxes, CalendarDays, Church, Gift, Heart, Home, LayoutDashboard,
-  Megaphone, MonitorPlay, Music2, Newspaper, Search, Settings, ShieldCheck, MessageCircle,
+  Megaphone, MonitorPlay, Music2, Newspaper, Search, Settings, ShieldCheck, MessageCircle, ListOrdered,
   Sparkles, Users, UsersRound, Baby, ClipboardList, ContactRound, UserRoundCheck,
   WalletCards
 } from 'lucide-react';
@@ -40,6 +40,7 @@ const people=[
 
 const operations=[
   {href:'/events',label:'Eventos',icon:CalendarDays},
+  {href:'/service-order',label:'Ordem do culto',icon:ListOrdered},
   {href:'/volunteers',label:'Escalas',icon:UserRoundCheck},
   {href:'/worship',label:'Louvor',icon:Music2},
   {href:'/projection',label:'Projeção',icon:MonitorPlay},

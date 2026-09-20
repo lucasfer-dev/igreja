@@ -517,3 +517,33 @@ body{min-height:100vh}a{color:inherit;text-decoration:none}button,input,select,t
 @media(max-width:1000px){.chat-room-layout{grid-template-columns:1fr}.chat-member-panel{position:static}.communication-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.ref-page{padding:18px 12px 88px}.communication-summary{grid-template-columns:1fr 1fr}}
 
+
+/* Service order */
+.service-order-list{display:grid}
+.service-order-list>a{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.service-order-list>a:last-child{border-bottom:0}
+.service-order-list>a:hover strong{color:var(--brand)}
+.service-order-icon{width:34px;height:34px;border-radius:9px;background:#eef2f6;color:#556c85;display:grid;place-items:center}
+.service-order-list>a>div{display:grid;min-width:0}.service-order-list strong{font-size:12px}.service-order-list div span{font-size:10px;color:var(--muted);margin-top:3px}
+.service-order-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.55fr);gap:14px;align-items:start}
+.service-order-add{position:sticky;top:76px}
+.service-order-timeline{display:grid}
+.service-order-item{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}
+.service-order-item:last-child{border-bottom:0}
+.service-order-position{display:grid;align-content:start;justify-items:center;border-right:1px solid var(--line);padding-right:10px}
+.service-order-position strong{font-size:18px;letter-spacing:-.04em}.service-order-position span{font-size:9px;color:var(--muted);margin-top:4px}
+.service-order-main{min-width:0}.service-order-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.service-order-title strong{font-size:13px}
+.service-order-main>p{font-size:11px;color:var(--muted);line-height:1.55;margin:6px 0}
+.service-order-meta{display:flex;gap:10px;flex-wrap:wrap;font-size:9px;color:#667085}
+.service-order-controls{display:flex;gap:4px;align-items:start}.service-order-controls form{margin:0}.service-order-controls button{width:30px;height:30px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#667085;display:grid;place-items:center;cursor:pointer}.service-order-controls button:disabled{opacity:.3;cursor:not-allowed}.service-order-controls button:hover:not(:disabled){background:#f8fafc;color:#111827}.service-order-controls .danger:hover{background:var(--danger-soft);color:var(--danger)}
+.service-order-edit{margin-top:9px}.service-order-edit summary{cursor:pointer;font-size:10px;font-weight:700;color:var(--brand)}.service-order-edit[open] summary{margin-bottom:10px}.service-order-edit .form{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:12px}
+@media(max-width:980px){.service-order-grid{grid-template-columns:1fr}.service-order-add{position:static}}
+@media(max-width:620px){.service-order-item{grid-template-columns:42px 1fr}.service-order-controls{grid-column:2;justify-content:flex-end}.service-order-position{padding-right:7px}}
+
+.route-loading{display:grid;gap:16px;animation:routeLoadingFade .18s ease}
+.route-loading-head{display:grid;gap:8px}.route-loading-head span:first-child{width:220px;height:28px}.route-loading-head span:last-child{width:360px;max-width:75%;height:12px}
+.route-loading-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.route-loading-cards span{height:86px;border-radius:11px}
+.route-loading-panel{height:360px;border-radius:12px;padding:18px;display:grid;align-content:start;gap:12px}.route-loading-panel span{height:12px;border-radius:999px}.route-loading-panel span:nth-child(1){width:34%}.route-loading-panel span:nth-child(2){width:92%}.route-loading-panel span:nth-child(3){width:84%}.route-loading-panel span:nth-child(4){width:88%}.route-loading-panel span:nth-child(5){width:62%}
+.route-loading span,.route-loading-panel{background:linear-gradient(90deg,#eceff3 25%,#f7f8fa 50%,#eceff3 75%);background-size:200% 100%;animation:routeLoadingShimmer 1.2s infinite}
+@keyframes routeLoadingShimmer{to{background-position:-200% 0}}@keyframes routeLoadingFade{from{opacity:.45}to{opacity:1}}
+@media(max-width:760px){.route-loading-cards{grid-template-columns:1fr 1fr}}
