@@ -1,8 +1,8 @@
 import { CalendarDays, CircleDollarSign, Sparkles, TrendingUp, Users, UsersRound } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 export default async function ReportsPage(){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('reports.read');
   const now=new Date(); const since=new Date(now); since.setMonth(since.getMonth()-5); since.setDate(1);
 
   const [members,visitors,events,cells,tx,attendance,newMembers,newVisitors] = await Promise.all([
