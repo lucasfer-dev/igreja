@@ -18,6 +18,10 @@ export async function registerForEvent(eventId:string) {
 
 export async function checkInRegistration(eventId:string,registrationId:string) {
   const {supabase,churchId}=await requireChurch();
+  const { data: registration } = await supabase.from('event_registrations').select('member_id,visitor_id').eq('church_id',churchId).eq('event_id',eventId).eq('id',registrationId).maybeSingle();
   await supabase.from('event_registrations').update({checked_in_at:new Date().toISOString(),status:'checked_in'}).eq('church_id',churchId).eq('event_id',eventId).eq('id',registrationId);
-  revalidatePath('/events/'+eventId);
+  if (registration) {
+    await supabase.from('attendances').insert({church_id:churchId,event_id:eventId,member_id:registration.member_id,visitor_id:registration.visitor_id,occurred_at:new Date().toISOString(),source:'event_checkin'});
+  }
+  revalidatePath('/events/'+eventId); revalidatePath('/admin');
 }
