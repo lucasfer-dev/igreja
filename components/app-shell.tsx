@@ -6,6 +6,7 @@ import {
   WalletCards
 } from 'lucide-react';
 import { signOut } from '@/app/actions';
+import { MemberShell } from '@/components/member-shell';
 
 type Props={
   children:React.ReactNode;
@@ -13,6 +14,7 @@ type Props={
   profileName:string;
   roleName:string;
   roleKey:string;
+  unreadCount:number;
 };
 
 const memberLinks=[
@@ -60,8 +62,12 @@ function NavBlock({title,links}:{title:string;links:readonly any[]}){
   </section>;
 }
 
-export function AppShell({children,churchName,profileName,roleName,roleKey}:Props){
-  const isStaff=roleKey!=='member';
+export function AppShell({children,churchName,profileName,roleName,roleKey,unreadCount}:Props){
+  if(roleKey==='member'){
+    return <MemberShell churchName={churchName} profileName={profileName} unreadCount={unreadCount}>{children}</MemberShell>;
+  }
+
+  const isStaff=true;
 
   return <div className="ref-shell">
     <aside className="ref-sidebar">
@@ -99,7 +105,7 @@ export function AppShell({children,churchName,profileName,roleName,roleKey}:Prop
         </form>
         <div className="ref-top-actions">
           <Link href="/calendar"><CalendarDays size={14}/></Link>
-          <Link href="/notifications"><Bell size={14}/><i/></Link>
+          <Link href="/notifications" aria-label={unreadCount?`Notificações, ${unreadCount} não lidas`:'Notificações'}><Bell size={14}/>{unreadCount>0&&<i/>}</Link>
           <span className="ref-top-avatar">{profileName.slice(0,1).toUpperCase()}</span>
         </div>
       </header>
