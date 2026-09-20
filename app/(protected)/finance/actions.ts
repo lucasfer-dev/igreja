@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 const schema = z.object({
   direction: z.enum(['income','expense']),
@@ -13,7 +13,7 @@ const schema = z.object({
 });
 
 export async function createTransaction(formData: FormData) {
-  const { supabase, churchId, unitId, user } = await requireChurch();
+  const { supabase, churchId, unitId, user } = await requirePermission('finance.manage');
   const parsed = schema.safeParse({
     direction: formData.get('direction'),
     category: formData.get('category'),
