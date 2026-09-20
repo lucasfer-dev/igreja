@@ -1,28 +1,87 @@
 import Link from 'next/link';
-import { CalendarDays, HeartHandshake, Megaphone, UserRound, Newspaper, BookOpen, HandHeart } from 'lucide-react';
+import {
+  Bell, BookOpen, CalendarDays, ChevronRight, HandHeart, HeartHandshake,
+  MessageCircle, Newspaper, PlayCircle, Sparkles, UsersRound
+} from 'lucide-react';
 import { requireChurch } from '@/lib/auth';
 
-export default async function MemberDashboard() {
-  const {supabase,churchId,user,churchName,profileName,roleKey}=await requireChurch(); const now=new Date().toISOString();
-  const [events,announcements,notifications,member,posts,content]=await Promise.all([
-    supabase.from('events').select('id,title,description,starts_at,address,status').eq('church_id',churchId).gte('starts_at',now).order('starts_at').limit(4),
-    supabase.from('announcements').select('id,title,body,published_at').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(3),
-    supabase.from('notifications').select('id,title,body,created_at,read_at').eq('church_id',churchId).eq('user_id',user.id).is('archived_at',null).order('created_at',{ascending:false}).limit(4),
-    supabase.from('church_members').select('id,full_name,status,joined_at,baptism_date').eq('church_id',churchId).eq('auth_user_id',user.id).maybeSingle(),
-    supabase.from('posts').select('id,title,body,post_type,published_at').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(2),
-    supabase.from('content_library').select('id,title,description,category,content_type,url,media_url').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(3),
-  ]);
-  const schedules=member.data?.id ? await supabase.from('volunteer_schedules').select('id,function_name,starts_at,status,events(title)').eq('church_id',churchId).eq('member_id',member.data.id).gte('starts_at',now).order('starts_at').limit(4) : {data:[] as any[]};
+export default async function MemberDashboard(){
+  const {supabase,churchId,user,churchName,profileName,roleKey}=await requireChurch();
+  const now=new Date().toISOString();
 
-  return <><header className="hero hero-member"><div><span className="eyebrow">Olá, {profileName}</span><h1>Bem-vindo à {churchName}</h1><p>Acompanhe o que está acontecendo na sua comunidade e encontre seus próximos passos.</p></div>{roleKey!=='member'&&<Link className="btn secondary-light" href="/admin">Abrir administração</Link>}</header>
-  <section className="quick-grid"><div className="quick-card"><span className="quick-icon"><UserRound size={20}/></span><div><small>Seu vínculo</small><strong>{member.data?.status?String(member.data.status):'Comunidade'}</strong></div></div><div className="quick-card"><span className="quick-icon"><CalendarDays size={20}/></span><div><small>Próximos eventos</small><strong>{events.data?.length||0}</strong></div></div><Link className="quick-card" href="/feed"><span className="quick-icon"><Newspaper size={20}/></span><div><small>Mural</small><strong>{posts.data?.length||0} novidades</strong></div></Link><Link className="quick-card" href="/content"><span className="quick-icon"><BookOpen size={20}/></span><div><small>Conteúdos</small><strong>{content.data?.length||0} recentes</strong></div></Link></section>
-  <section className="content-grid"><div className="stack">
-    <section className="card"><div className="section-head"><div><span className="eyebrow">Agenda</span><h2>Próximos eventos</h2></div><Link href="/events">Ver todos</Link></div><div className="event-list">{events.data?.length?events.data.map(e=><article className="event-item" key={e.id}><div className="date-box"><strong>{new Date(e.starts_at).getDate()}</strong><span>{new Date(e.starts_at).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></div><div><h3><Link className="table-link" href={'/events/'+e.id}>{e.title}</Link></h3><p>{new Date(e.starts_at).toLocaleString('pt-BR',{dateStyle:'medium',timeStyle:'short'})}{e.address?' • '+e.address:''}</p></div></article>):<div className="empty compact">Nenhum evento futuro publicado.</div>}</div></section>
-    <section className="card"><div className="section-head"><div><span className="eyebrow">Comunidade</span><h2>Últimas do mural</h2></div><Link href="/feed">Abrir mural</Link></div><div className="announcement-list">{posts.data?.length?posts.data.map(item=><article className="announcement" key={item.id}><h3>{item.title||'Publicação'}</h3><p>{item.body}</p><small>{new Date(item.published_at).toLocaleDateString('pt-BR')}</small></article>):announcements.data?.length?announcements.data.map(item=><article className="announcement" key={item.id}><h3>{item.title}</h3><p>{item.body}</p><small>{new Date(item.published_at).toLocaleDateString('pt-BR')}</small></article>):<div className="empty compact">Nenhuma novidade publicada.</div>}</div></section>
-    <section className="card"><div className="section-head"><div><span className="eyebrow">Para você</span><h2>Conteúdos recentes</h2></div><Link href="/content">Ver biblioteca</Link></div><div className="content-mini-grid">{content.data?.length?content.data.map(item=><article className="content-mini" key={item.id}><span className="metric-icon"><BookOpen size={17}/></span><div><strong>{item.title}</strong><span>{item.category||item.content_type}</span></div></article>):<div className="empty compact">Nenhum conteúdo recente.</div>}</div></section>
-  </div><aside className="stack">
-    <section className="card accent-card"><span className="eyebrow">Cuidado pastoral</span><h2>Como podemos orar por você?</h2><p>Envie um pedido de oração. Ele fica vinculado à sua conta e pode ser tratado com privacidade.</p><form action="/api/prayer" method="post" className="form compact-form"><input name="title" placeholder="Assunto do pedido" required/><textarea name="body" rows={4} placeholder="Conte o que está no seu coração" required/><button className="btn" type="submit">Enviar pedido</button></form></section>
-    {schedules.data?.length?<section className="card"><div className="section-head"><h2>Minhas escalas</h2><span className="metric-icon"><HandHeart size={17}/></span></div>{schedules.data.map((s:any)=><div className="mini-item" key={s.id}><strong>{s.function_name} • {s.events?.title||'Evento'}</strong><span>{new Date(s.starts_at).toLocaleString('pt-BR')} • {s.status}</span></div>)}</section>:null}
-    <section className="card"><div className="section-head"><h2>Notificações</h2><Link href="/notifications">Ver todas</Link></div><div className="mini-list">{notifications.data?.length?notifications.data.map(item=><div className="mini-item" key={item.id}><strong>{item.title}</strong><span>{item.body||'Nova atualização disponível.'}</span></div>):<div className="empty compact">Você está em dia.</div>}</div></section>
-  </aside></section></>;
+  const [events,notifications,member,posts,content,rooms]=await Promise.all([
+    supabase.from('events').select('id,title,description,starts_at,address,banner_url,category').eq('church_id',churchId).gte('starts_at',now).order('starts_at').limit(6),
+    supabase.from('notifications').select('id,title,body,type,created_at,read_at').eq('church_id',churchId).eq('user_id',user.id).is('archived_at',null).order('created_at',{ascending:false}).limit(5),
+    supabase.from('church_members').select('id,full_name,status').eq('church_id',churchId).eq('auth_user_id',user.id).maybeSingle(),
+    supabase.from('posts').select('id,title,body,post_type,published_at').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(4),
+    supabase.from('content_library').select('id,title,description,category,content_type,url,media_url').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(4),
+    supabase.from('chat_rooms').select('id,name,description,room_type,last_message_at').eq('church_id',churchId).order('last_message_at',{ascending:false}).limit(3),
+  ]);
+
+  const schedules=member.data?.id
+    ? await supabase.from('volunteer_schedules').select('id,function_name,starts_at,status,events(title)').eq('church_id',churchId).eq('member_id',member.data.id).gte('starts_at',now).order('starts_at').limit(3)
+    : {data:[] as any[]};
+
+  const nextEvent=events.data?.[0];
+  const unread=notifications.data?.filter(n=>!n.read_at).length||0;
+
+  return <div className="member-app">
+    <header className="member-home-head">
+      <div><span className="member-greeting">Olá, {profileName.split(' ')[0]} 👋</span><h1>{churchName}</h1><p>Veja o que está acontecendo na sua comunidade.</p></div>
+      {roleKey!=='member'&&<Link className="member-admin-link" href="/admin">Administração</Link>}
+    </header>
+
+    {nextEvent&&<Link href={'/events/'+nextEvent.id} className="member-feature-event">
+      <div className="member-feature-overlay">
+        <span className="member-feature-tag">PRÓXIMO EVENTO</span>
+        <h2>{nextEvent.title}</h2>
+        <p>{new Date(nextEvent.starts_at).toLocaleString('pt-BR',{dateStyle:'long',timeStyle:'short'})}{nextEvent.address?' • '+nextEvent.address:''}</p>
+        <span className="member-feature-cta">Ver detalhes <ChevronRight size={16}/></span>
+      </div>
+    </Link>}
+
+    <section className="member-shortcuts">
+      <Link href="/events"><span><CalendarDays size={21}/></span><strong>Eventos</strong><small>Agenda da igreja</small></Link>
+      <Link href="/chats"><span><MessageCircle size={21}/></span><strong>Chats</strong><small>Comunidade e grupos</small></Link>
+      <Link href="/notifications"><span><Bell size={21}/></span><strong>Avisos</strong><small>{unread} não lido(s)</small></Link>
+      <Link href="/feed"><span><Newspaper size={21}/></span><strong>Atualizações</strong><small>Mural da igreja</small></Link>
+    </section>
+
+    <section className="member-section">
+      <div className="member-section-head"><div><span>ACONTECE NA IGREJA</span><h2>Próximos eventos</h2></div><Link href="/events">Ver todos</Link></div>
+      <div className="member-event-rail">{events.data?.length?events.data.map(event=><Link href={'/events/'+event.id} className="member-event-card" key={event.id}><div className="member-event-date"><strong>{new Date(event.starts_at).getDate()}</strong><span>{new Date(event.starts_at).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></div><div><span>{event.category||'Evento'}</span><h3>{event.title}</h3><p>{new Date(event.starts_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}{event.address?' • '+event.address:''}</p></div></Link>):<div className="member-empty">Nenhum evento futuro publicado.</div>}</div>
+    </section>
+
+    <section className="member-home-grid">
+      <div className="stack">
+        <section className="member-panel">
+          <div className="member-section-head"><div><span>ATUALIZAÇÕES</span><h2>Últimas da comunidade</h2></div><Link href="/feed">Abrir mural</Link></div>
+          {posts.data?.length?<div className="member-update-list">{posts.data.map(post=><article key={post.id}><span className="member-update-icon">{post.post_type==='announcement'?<Sparkles size={17}/>:<Newspaper size={17}/>}</span><div><strong>{post.title||'Nova publicação'}</strong><p>{post.body}</p><small>{new Date(post.published_at).toLocaleString('pt-BR')}</small></div></article>)}</div>:<div className="member-empty">Nenhuma atualização publicada.</div>}
+        </section>
+
+        <section className="member-panel">
+          <div className="member-section-head"><div><span>PARA VOCÊ</span><h2>Conteúdos recentes</h2></div><Link href="/content">Ver biblioteca</Link></div>
+          <div className="member-content-grid">{content.data?.length?content.data.map(item=><a href={item.url||item.media_url||'/content'} className="member-content-card" key={item.id}><span>{item.content_type==='video'?<PlayCircle size={20}/>:<BookOpen size={20}/>}</span><div><small>{item.category||item.content_type}</small><strong>{item.title}</strong><p>{item.description||'Conteúdo da igreja.'}</p></div></a>):<div className="member-empty">Nenhum conteúdo disponível.</div>}</div>
+        </section>
+      </div>
+
+      <aside className="stack">
+        <section className="member-panel">
+          <div className="member-section-head"><div><span>COMUNIDADE</span><h2>Chats</h2></div><Link href="/chats">Abrir chats</Link></div>
+          {rooms.data?.length?<div className="member-chat-preview">{rooms.data.map(room=><Link href={'/chats/'+room.id} key={room.id}><span><MessageCircle size={16}/></span><div><strong>{room.name}</strong><small>{room.description||'Conversa da comunidade'}</small></div><ChevronRight size={15}/></Link>)}</div>:<div className="member-empty">Nenhum chat disponível.</div>}
+        </section>
+
+        {schedules.data?.length?<section className="member-panel"><div className="member-section-head"><div><span>MINHA IGREJA</span><h2>Minhas escalas</h2></div></div>{schedules.data.map((s:any)=><div className="member-schedule" key={s.id}><span><HandHeart size={17}/></span><div><strong>{s.function_name}</strong><small>{s.events?.title||'Evento'} • {new Date(s.starts_at).toLocaleString('pt-BR')}</small></div><span className="soft-status">{s.status}</span></div>)}</section>:null}
+
+        <section className="member-panel">
+          <div className="member-section-head"><div><span>AVISOS</span><h2>Notificações</h2></div><Link href="/notifications">Ver todas</Link></div>
+          {notifications.data?.length?<div className="member-notice-list">{notifications.data.map(n=><Link href="/notifications" key={n.id} className={!n.read_at?'unread':''}><span><Bell size={15}/></span><div><strong>{n.title}</strong><small>{n.body||'Nova atualização.'}</small></div></Link>)}</div>:<div className="member-empty">Você está em dia.</div>}
+        </section>
+
+        <section className="member-prayer">
+          <HeartHandshake size={22}/><div><strong>Como podemos orar por você?</strong><p>Envie um pedido de oração para a equipe pastoral.</p></div><Link href="/profile">Enviar pedido</Link>
+        </section>
+      </aside>
+    </section>
+  </div>;
 }

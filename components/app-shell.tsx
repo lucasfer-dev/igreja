@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import {
   Bell, BookOpen, Boxes, CalendarDays, Church, Gift, Heart, Home, LayoutDashboard,
-  Megaphone, MonitorPlay, Music2, Newspaper, Search, Settings, ShieldCheck,
+  Megaphone, MonitorPlay, Music2, Newspaper, Search, Settings, ShieldCheck, MessageCircle,
   Sparkles, Users, UsersRound, Baby, ClipboardList, ContactRound, UserRoundCheck,
   WalletCards
 } from 'lucide-react';
@@ -17,7 +17,8 @@ type Props={
 
 const memberLinks=[
   {href:'/dashboard',label:'Início',icon:Home},
-  {href:'/feed',label:'Mural',icon:Newspaper},
+  {href:'/feed',label:'Atualizações',icon:Newspaper},
+  {href:'/chats',label:'Chats',icon:MessageCircle},
   {href:'/events',label:'Eventos',icon:CalendarDays},
   {href:'/calendar',label:'Agenda',icon:CalendarDays},
   {href:'/content',label:'Conteúdos',icon:BookOpen},
@@ -107,8 +108,8 @@ export function AppShell({children,churchName,profileName,roleName,roleKey}:Prop
 
     <nav className="mobile-nav">
       <Link href={isStaff?'/admin':'/dashboard'}><Home size={19}/><span>Início</span></Link>
-      <Link href="/events"><CalendarDays size={19}/><span>Agenda</span></Link>
-      {isStaff&&<Link href="/members"><Users size={19}/><span>Pessoas</span></Link>}
+      <Link href="/events"><CalendarDays size={19}/><span>Eventos</span></Link>
+      {isStaff?<Link href="/members"><Users size={19}/><span>Pessoas</span></Link>:<Link href="/chats"><MessageCircle size={19}/><span>Chats</span></Link>}
       <Link href="/notifications"><Bell size={19}/><span>Avisos</span></Link>
       <Link href="/profile"><Users size={19}/><span>Perfil</span></Link>
     </nav>
