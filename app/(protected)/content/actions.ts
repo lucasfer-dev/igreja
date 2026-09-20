@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 export async function createContent(formData: FormData) {
-  const { supabase, churchId, user } = await requireChurch();
+  const { supabase, churchId, user } = await requirePermission('content.manage');
   const title = String(formData.get('title') || '').trim();
   const description = String(formData.get('description') || '').trim();
   const category = String(formData.get('category') || '').trim();
