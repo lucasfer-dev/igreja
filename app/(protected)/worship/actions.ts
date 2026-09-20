@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 export async function addSong(formData:FormData){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('worship.manage');
   const title=String(formData.get('title')||'').trim();
   if(!title) redirect('/worship/songs/new?error='+encodeURIComponent('Informe o título da música.'));
 
@@ -28,7 +28,7 @@ export async function addSong(formData:FormData){
 }
 
 export async function createSet(formData:FormData){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('worship.manage');
   const title=String(formData.get('title')||'').trim();
   if(!title) redirect('/worship/sets/new?error='+encodeURIComponent('Informe o nome do plano.'));
 
@@ -52,7 +52,7 @@ export async function createSet(formData:FormData){
 export async function addSongToSet(setId:string,formData:FormData){
   const songId=String(formData.get('song_id')||'');
   if(!songId)return;
-  const {supabase}=await requireChurch();
+  const {supabase}=await requirePermission('worship.manage');
   const {data:rows}=await supabase.from('worship_set_songs').select('position').eq('set_id',setId).order('position',{ascending:false}).limit(1);
   await supabase.from('worship_set_songs').upsert({
     set_id:setId,
@@ -67,7 +67,7 @@ export async function addSongToSet(setId:string,formData:FormData){
 }
 
 export async function updateSetStatus(setId:string,formData:FormData){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('worship.manage');
   await supabase.from('worship_sets').update({status:String(formData.get('status')||'draft')}).eq('church_id',churchId).eq('id',setId);
   revalidatePath('/worship');
   revalidatePath('/worship/sets/'+setId);
