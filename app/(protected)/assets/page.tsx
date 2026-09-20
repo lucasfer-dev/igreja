@@ -1,10 +1,66 @@
-import { Boxes } from 'lucide-react';
+import Link from 'next/link';
+import { Boxes, CircleDollarSign, MapPin, Plus, Search, Wrench } from 'lucide-react';
 import { requireChurch } from '@/lib/auth';
-import { createAsset } from './actions';
-export default async function Assets(){
- const {supabase,churchId}=await requireChurch(); const {data}=await supabase.from('assets').select('*').eq('church_id',churchId).order('name');
- const total=(data||[]).reduce((a,x)=>a+Number(x.purchase_value||0),0);
- return <><header className="topbar"><div className="title"><span className="eyebrow">Patrimônio</span><h1>Bens da igreja</h1><p>Equipamentos, instrumentos, móveis e ativos por local e situação.</p></div></header><section className="module-kpis"><div className="module-stat"><Boxes size={19}/><div><strong>{data?.length||0}</strong><span>Itens cadastrados</span></div></div><div className="module-stat"><CircleValue value={total}/></div></section><section className="content-grid admin-grid"><div className="card">{data?.length?<div className="table-wrap"><table className="table"><thead><tr><th>Bem</th><th>Categoria</th><th>Local</th><th>Status</th><th>Valor</th></tr></thead><tbody>{data.map(x=><tr key={x.id}><td><strong>{x.name}</strong><small className="table-sub">{x.serial_number||''}</small></td><td>{x.category||'—'}</td><td>{x.location||'—'}</td><td><span className="badge">{x.status}</span></td><td>{x.purchase_value?Number(x.purchase_value).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—'}</td></tr>)}</tbody></table></div>:<div className="empty">Nenhum patrimônio cadastrado.</div>}</div><aside className="card sticky-card"><h2>Novo bem</h2><form action={createAsset} className="form"><div className="field"><label>Nome</label><input name="name" required/></div><div className="field"><label>Categoria</label><input name="category"/></div><div className="field"><label>Nº série/tombo</label><input name="serial_number"/></div><div className="field"><label>Local</label><input name="location"/></div><div className="form-row"><div className="field"><label>Compra</label><input name="purchase_date" type="date"/></div><div className="field"><label>Valor</label><input name="purchase_value" type="number" step="0.01"/></div></div><div className="field"><label>Status</label><select name="status"><option value="active">Ativo</option><option value="maintenance">Manutenção</option><option value="retired">Baixado</option></select></div><div className="field"><label>Observações</label><textarea name="notes" rows={3}/></div><button className="btn" type="submit">Cadastrar patrimônio</button></form></aside></section></>;
+
+function money(value:number){
+  return value.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 }
-function CircleValue({value}:{value:number}){return <><CircleDollarSign size={19}/><div><strong>{value.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong><span>Valor registrado</span></div></>}
-import { CircleDollarSign } from 'lucide-react';
+
+export default async function Assets({searchParams}:{searchParams:Promise<{q?:string;status?:string;category?:string}>}){
+  const params=await searchParams;
+  const {supabase,churchId}=await requireChurch();
+  const {data,error}=await supabase.from('assets').select('*').eq('church_id',churchId).order('name');
+
+  const all=data||[];
+  const categories=[...new Set(all.map(x=>x.category).filter(Boolean) as string[])].sort();
+  const filtered=all.filter(item=>{
+    const q=(params.q||'').toLowerCase();
+    const matchesQ=!q||item.name.toLowerCase().includes(q)||String(item.serial_number||'').toLowerCase().includes(q)||String(item.location||'').toLowerCase().includes(q);
+    const matchesStatus=!params.status||item.status===params.status;
+    const matchesCategory=!params.category||item.category===params.category;
+    return matchesQ&&matchesStatus&&matchesCategory;
+  });
+
+  const totalValue=all.reduce((a,x)=>a+Number(x.purchase_value||0),0);
+  const active=all.filter(x=>x.status==='active').length;
+  const maintenance=all.filter(x=>x.status==='maintenance').length;
+  const locations=new Set(all.map(x=>x.location).filter(Boolean)).size;
+
+  return <>
+    <header className="module-heading">
+      <div><span className="module-kicker">Patrimônio</span><h1>Inventário da igreja</h1><p>Controle equipamentos, instrumentos, móveis e ativos por local, categoria e situação.</p></div>
+      <Link className="module-primary" href="/assets/new"><Plus size={16}/> Novo bem</Link>
+    </header>
+
+    <section className="asset-summary">
+      <div><Boxes size={20}/><div><strong>{all.length}</strong><span>Itens cadastrados</span></div></div>
+      <div><CircleDollarSign size={20}/><div><strong>{money(totalValue)}</strong><span>Valor registrado</span></div></div>
+      <div><Wrench size={20}/><div><strong>{maintenance}</strong><span>Em manutenção</span></div></div>
+      <div><MapPin size={20}/><div><strong>{locations}</strong><span>Locais com patrimônio</span></div></div>
+    </section>
+
+    <section className="module-toolbar asset-toolbar">
+      <form>
+        <div className="module-search"><Search size={16}/><input name="q" placeholder="Buscar por nome, tombo ou local..." defaultValue={params.q||''}/></div>
+        <select name="category" defaultValue={params.category||''}><option value="">Todas as categorias</option>{categories.map(category=><option value={category} key={category}>{category}</option>)}</select>
+        <select name="status" defaultValue={params.status||''}><option value="">Todos os status</option><option value="active">Ativo</option><option value="maintenance">Manutenção</option><option value="retired">Baixado</option></select>
+        <button type="submit">Filtrar</button>
+      </form>
+    </section>
+
+    {error?<p className="alert">{error.message}</p>:filtered.length?
+      <section className="asset-inventory">
+        <div className="asset-table-head"><span>Bem</span><span>Categoria</span><span>Local</span><span>Status</span><span>Valor</span></div>
+        {filtered.map(item=><article className="asset-row" key={item.id}>
+          <div className="asset-primary"><span className="asset-icon"><Boxes size={17}/></span><div><strong>{item.name}</strong><small>{item.serial_number?'Tombo / série: '+item.serial_number:'Sem número de tombo'}</small></div></div>
+          <span>{item.category||'Sem categoria'}</span>
+          <span>{item.location||'Não informado'}</span>
+          <span><i className={'asset-status '+item.status}>{item.status==='active'?'Ativo':item.status==='maintenance'?'Manutenção':'Baixado'}</i></span>
+          <strong>{item.purchase_value?money(Number(item.purchase_value)):'—'}</strong>
+        </article>)}
+      </section>
+      :<section className="module-empty-state"><Boxes size={36}/><h2>Nenhum patrimônio encontrado</h2><p>{all.length?'Ajuste os filtros para encontrar outros itens.':'Cadastre equipamentos, móveis e instrumentos para montar o inventário.'}</p>{!all.length&&<Link href="/assets/new">Cadastrar primeiro bem</Link>}</section>}
+
+    {all.length>0&&<div className="asset-footer-note"><span>{active} ativo(s)</span><span>{maintenance} em manutenção</span><span>{filtered.length} exibido(s)</span></div>}
+  </>;
+}

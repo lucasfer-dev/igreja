@@ -377,3 +377,89 @@ body{min-height:100vh}a{color:inherit;text-decoration:none}button,input,select,t
 .report-domain-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:14px}.report-domain-grid article{background:#fff;border:1px solid #dedbd4;border-radius:9px;padding:13px;display:flex;gap:9px}.report-domain-grid svg{color:#64748b}.report-domain-grid article>div{display:grid}.report-domain-grid strong{font-size:15px}.report-domain-grid span{font-size:9px;font-weight:700}.report-domain-grid small{font-size:8px;color:#98a2b3;margin-top:3px}.report-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.report-bars{height:210px;display:flex;gap:13px;align-items:flex-end;padding-top:8px}.report-bars>div{flex:1;height:100%;display:grid;grid-template-rows:18px 1fr 20px;align-items:end;text-align:center}.report-bars>div>span{font-size:9px;color:#667085}.report-bars>div>div{height:100%;display:flex;align-items:flex-end;justify-content:center}.report-bars i{display:block;width:42px;max-width:70%;background:#6d85a5;border-radius:5px 5px 2px 2px;min-height:6px}.report-bars small{font-size:8px;color:#98a2b3}.report-month-list{display:grid}.report-month-list>div{display:grid;grid-template-columns:45px 1fr 1fr;gap:8px;padding:9px 0;border-bottom:1px solid #efede8}.report-month-list strong{font-size:9px}.report-month-list span{font-size:8px;color:#667085}.report-month-list i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}.blue-dot{background:#6d85a5}.amber-dot{background:#d19a45}.report-finance-row{display:grid;grid-template-columns:45px 1fr 1fr;gap:10px;padding:9px 0;border-bottom:1px solid #efede8}.report-finance-row>strong{font-size:9px}.report-finance-row>div{display:grid}.report-finance-row span{font-size:8px;color:#98a2b3}.report-finance-row b{font-size:9px}.report-sources>div:not(.section-title){display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #efede8}.report-sources span{font-size:9px;color:#667085}.report-sources strong{font-size:10px}
 @media(max-width:1100px){.cells-catalog,.ministry-grid{grid-template-columns:repeat(2,1fr)}.workspace-grid,.schedule-page-grid,.communication-layout{grid-template-columns:1fr}.report-domain-grid{grid-template-columns:repeat(3,1fr)}.report-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.module-heading{display:grid}.module-summary-row,.ministry-summary,.schedule-summary,.communication-summary,.workspace-summary,.report-domain-grid{grid-template-columns:1fr 1fr}.cells-catalog,.ministry-grid{grid-template-columns:1fr}.creation-layout{grid-template-columns:1fr}.workspace-tabs{overflow:auto}.attendance-worklist{grid-template-columns:1fr}.event-feature-card{grid-template-columns:auto 1fr}.event-feature-stats{grid-column:1/-1}.past-event-grid{grid-template-columns:1fr}.schedule-roster>div{grid-template-columns:auto 1fr}.schedule-status-form{grid-column:1/-1}.report-domain-grid{grid-template-columns:1fr 1fr}.module-toolbar form{flex-wrap:wrap}.module-search{flex-basis:100%}}
+
+
+/* Patrimony workspace */
+.asset-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:15px}.asset-summary>div{background:#fff;border:1px solid #dedbd4;border-radius:10px;padding:16px;display:flex;align-items:center;gap:11px}.asset-summary svg{color:#60738b}.asset-summary>div>div{display:grid}.asset-summary strong{font-size:20px;letter-spacing:-.02em}.asset-summary span{font-size:10px;color:#667085;margin-top:2px}.asset-inventory{background:#fff;border:1px solid #dedbd4;border-radius:10px;overflow:hidden}.asset-table-head,.asset-row{display:grid;grid-template-columns:1.6fr .8fr .9fr .65fr .7fr;gap:14px;align-items:center;padding:13px 16px}.asset-table-head{background:#f8f8f6;border-bottom:1px solid #e5e2dc;font-size:9px;font-weight:800;color:#8a9098;text-transform:uppercase;letter-spacing:.07em}.asset-row{border-bottom:1px solid #efede8;font-size:11px}.asset-row:last-child{border-bottom:0}.asset-row:hover{background:#fbfbf9}.asset-primary{display:flex;align-items:center;gap:10px}.asset-icon{width:36px;height:36px;border-radius:8px;background:#eef2f6;color:#58708b;display:grid;place-items:center}.asset-primary>div{display:grid}.asset-primary strong{font-size:11px}.asset-primary small{font-size:9px;color:#98a2b3;margin-top:2px}.asset-row>span{font-size:10px;color:#667085}.asset-row>strong{font-size:11px}.asset-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-style:normal;font-size:9px;font-weight:800}.asset-status.active{background:#eaf8f0;color:#137a46}.asset-status.maintenance{background:#fff6e7;color:#a15c00}.asset-status.retired{background:#f2f4f7;color:#667085}.asset-footer-note{display:flex;gap:16px;color:#7b8490;font-size:9px;margin-top:9px}.asset-tips span{display:flex;align-items:flex-start;gap:7px}.asset-creation-layout{grid-template-columns:.75fr 1.25fr}
+
+/* Site-wide readability pass */
+@media(min-width:901px){
+  .ref-shell{grid-template-columns:266px minmax(0,1fr)}
+  .ref-sidebar{padding:18px 14px}
+  .ref-brand strong{font-size:15px}
+  .ref-side-title{font-size:10px}
+  .ref-side-nav a{font-size:13px;padding:9px 10px;gap:10px}
+  .ref-side-nav a svg{width:18px;height:18px}
+  .ref-sidebar-user strong{font-size:12px}
+  .ref-sidebar-user span{font-size:10px}
+
+  .ref-topbar{height:64px}
+  .ref-global-search{width:370px;height:40px}
+  .ref-global-search input{font-size:12px}
+
+  .ref-page{max-width:1380px;padding:34px 36px 46px}
+  .module-heading h1,.page-heading h1{font-size:38px}
+  .module-heading p,.page-heading p{font-size:15px}
+  .module-kicker,.page-kicker,.section-eyebrow{font-size:11px}
+  .module-primary,.primary-action{font-size:12px;padding:11px 15px}
+
+  .module-summary-row>div,.asset-summary>div,.people-summary>div,.schedule-summary>div,.communication-summary>div{padding:18px}
+  .module-summary-row strong,.people-summary strong,.schedule-summary strong,.communication-summary strong{font-size:24px}
+  .module-summary-row span,.people-summary span:last-child,.schedule-summary span,.communication-summary span{font-size:11px}
+
+  .module-toolbar{padding:12px 14px}
+  .module-search input{height:42px;font-size:12px}
+  .module-toolbar select,.module-toolbar button{font-size:12px}
+
+  .panel,.ref-card,.directory-panel,.attention-panel{font-size:12px}
+  .panel{padding:22px 24px}
+  .section-title h2,.panel-title{font-size:19px}
+  .section-title a{font-size:12px}
+
+  .field label{font-size:12px}
+  .field input,.field select,.field textarea{font-size:13px;padding:12px 13px}
+  .primary-submit,.btn{font-size:12px;min-height:42px}
+
+  .workspace-heading h1{font-size:36px}
+  .workspace-heading p{font-size:14px}
+  .workspace-meta{font-size:12px}
+  .workspace-tabs a{font-size:12px;padding:11px 2px}
+  .workspace-summary strong{font-size:18px}
+  .workspace-summary span{font-size:10px}
+
+  .cell-card-head h2,.ministry-card-head h2,.event-feature-copy h2{font-size:19px}
+  .cell-card-meta span,.ministry-card p,.event-feature-copy>div span{font-size:11px}
+  .cell-card-stats strong,.ministry-card-footer strong{font-size:17px}
+  .cell-card-stats span,.ministry-card-footer span{font-size:9px}
+
+  .workspace-people strong,.team-roster strong,.schedule-worklist div>div strong,.event-registration-list strong,.event-volunteer-list strong,.schedule-roster strong,.communication-item strong{font-size:12px}
+  .workspace-people span,.team-roster span,.schedule-worklist div>div span,.event-registration-list span,.event-volunteer-list span,.schedule-roster span,.communication-item p{font-size:10px}
+
+  .asset-summary strong{font-size:23px}
+  .asset-summary span{font-size:11px}
+  .asset-table-head{font-size:10px}
+  .asset-row{font-size:12px;padding:15px 18px}
+  .asset-primary strong{font-size:12px}
+  .asset-primary small,.asset-row>span,.asset-status{font-size:10px}
+
+  .table th{font-size:11px}
+  .table td{font-size:12px}
+  .table th,.table td{padding:13px 12px}
+  .mini-item strong{font-size:11px}
+  .mini-item span{font-size:10px}
+  .card h2{font-size:18px}
+  .card h3{font-size:14px}
+
+  .module-stat{padding:16px 18px;min-width:220px}
+  .module-stat strong{font-size:22px}
+  .module-stat span{font-size:11px}
+}
+
+@media(max-width:760px){
+  .asset-summary{grid-template-columns:1fr 1fr}
+  .asset-table-head{display:none}
+  .asset-row{grid-template-columns:1fr auto}
+  .asset-row>span:nth-child(2),.asset-row>span:nth-child(3){display:none}
+  .asset-row>strong{grid-column:2}
+  .asset-creation-layout{grid-template-columns:1fr}
+}
