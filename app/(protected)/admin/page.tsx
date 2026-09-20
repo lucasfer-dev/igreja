@@ -1,60 +1,147 @@
 import Link from 'next/link';
-import { CalendarPlus, CircleDollarSign, Sparkles, UserPlus, UsersRound, Cake, Activity } from 'lucide-react';
+import {
+  AlertCircle, ArrowDownRight, ArrowUpRight, Baby, CalendarDays, Cake, CheckCircle2,
+  CircleDollarSign, Clock3, Sparkles, UserPlus, UserRoundPlus, UsersRound
+} from 'lucide-react';
 import { requireChurch } from '@/lib/auth';
 
-function weekLabel(date:Date){return date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
+function money(value:number){
+  return value.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
 
-export default async function AdminDashboard() {
-  const { supabase, churchId, churchName } = await requireChurch();
-  const now=new Date(); const monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
-  const attendanceStart=new Date(now); attendanceStart.setDate(attendanceStart.getDate()-27);
-  const growthStart=new Date(now); growthStart.setMonth(growthStart.getMonth()-5); growthStart.setDate(1); growthStart.setHours(0,0,0,0);
+function dayLabel(date:Date){
+  return date.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+}
 
-  const [members,visitors,cells,events,transactions,recentMembers,recentVisitors,attendance,growthMembers] = await Promise.all([
+export default async function AdminDashboard(){
+  const {supabase,churchId,churchName,profileName}=await requireChurch();
+  const now=new Date();
+  const todayStart=new Date(now); todayStart.setHours(0,0,0,0);
+  const todayEnd=new Date(now); todayEnd.setHours(23,59,59,999);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+
+  const [
+    members, visitors, cells, transactions, upcomingEvents, todayEvents,
+    pendingSchedules, activeKids, newVisitors, birthdaysRows, recentMembers, attendance
+  ]=await Promise.all([
     supabase.from('church_members').select('*',{count:'exact',head:true}).eq('church_id',churchId).neq('status','inactive'),
     supabase.from('visitors').select('*',{count:'exact',head:true}).eq('church_id',churchId),
     supabase.from('cells').select('*',{count:'exact',head:true}).eq('church_id',churchId).eq('active',true),
-    supabase.from('events').select('id,title,starts_at,status').eq('church_id',churchId).gte('starts_at',now.toISOString()).order('starts_at').limit(5),
-    supabase.from('transactions').select('direction,amount,occurred_at').eq('church_id',churchId).gte('occurred_at',monthStart),
-    supabase.from('church_members').select('id,full_name,status,birth_date,created_at').eq('church_id',churchId).order('created_at',{ascending:false}).limit(10),
-    supabase.from('visitors').select('id,full_name,stage,created_at').eq('church_id',churchId).order('created_at',{ascending:false}).limit(5),
-    supabase.from('attendances').select('occurred_at').eq('church_id',churchId).gte('occurred_at',attendanceStart.toISOString()).order('occurred_at'),
-    supabase.from('church_members').select('created_at').eq('church_id',churchId).gte('created_at',growthStart.toISOString()).neq('status','inactive'),
+    supabase.from('transactions').select('direction,amount,occurred_at,category').eq('church_id',churchId).gte('occurred_at',monthStart.toISOString().slice(0,10)),
+    supabase.from('events').select('id,title,starts_at,address,status').eq('church_id',churchId).gte('starts_at',now.toISOString()).order('starts_at').limit(5),
+    supabase.from('events').select('id,title,starts_at,address,status').eq('church_id',churchId).gte('starts_at',todayStart.toISOString()).lte('starts_at',todayEnd.toISOString()).order('starts_at'),
+    supabase.from('volunteer_schedules').select('id,function_name,starts_at,status,church_members(full_name),events(title)').eq('church_id',churchId).eq('status','pending').gte('starts_at',now.toISOString()).order('starts_at').limit(8),
+    supabase.from('kids_checkins').select('id,room,checked_in_at,kids_children(full_name)').eq('church_id',churchId).is('checked_out_at',null).order('checked_in_at'),
+    supabase.from('visitors').select('id,full_name,stage,created_at,phone,email').eq('church_id',churchId).in('stage',['new','contacted']).order('created_at',{ascending:false}).limit(8),
+    supabase.from('church_members').select('id,full_name,birth_date').eq('church_id',churchId).neq('status','inactive'),
+    supabase.from('church_members').select('id,full_name,status,created_at').eq('church_id',churchId).order('created_at',{ascending:false}).limit(6),
+    supabase.from('attendances').select('occurred_at').eq('church_id',churchId).gte('occurred_at',new Date(now.getTime()-28*86400000).toISOString()).order('occurred_at'),
   ]);
 
-  const finance=(transactions.data||[]).reduce((a,row)=>{const v=Number(row.amount);row.direction==='income'?a.income+=v:a.expense+=v;return a;},{income:0,expense:0});
-  const allBirthdayRows = await supabase.from('church_members').select('id,full_name,birth_date').eq('church_id',churchId).neq('status','inactive');
-  const month=now.getMonth()+1;
-  const birthdays=(allBirthdayRows.data||[]).filter(m=>m.birth_date&&Number(String(m.birth_date).slice(5,7))===month).sort((a,b)=>String(a.birth_date).slice(8).localeCompare(String(b.birth_date).slice(8)));
+  const finance=(transactions.data||[]).reduce((acc,row)=>{
+    const v=Number(row.amount);
+    if(row.direction==='income')acc.income+=v; else acc.expense+=v;
+    return acc;
+  },{income:0,expense:0});
 
-  const weeks=Array.from({length:4},(_,i)=>{const start=new Date(now);start.setHours(0,0,0,0);start.setDate(start.getDate()-((3-i)*7+6));const end=new Date(start);end.setDate(end.getDate()+6);end.setHours(23,59,59,999);const count=(attendance.data||[]).filter(a=>{const d=new Date(a.occurred_at);return d>=start&&d<=end}).length;return {label:weekLabel(start),count};});
+  const birthdays=(birthdaysRows.data||[]).filter(m=>{
+    if(!m.birth_date)return false;
+    const md=String(m.birth_date).slice(5);
+    const current=now.toISOString().slice(5,10);
+    const seven=new Date(now.getTime()+7*86400000).toISOString().slice(5,10);
+    return md>=current&&md<=seven;
+  }).slice(0,6);
+
+  const attention=[
+    pendingSchedules.data?.length?{type:'warning',icon:Clock3,title:`${pendingSchedules.data.length} escala(s) aguardando confirmação`,href:'/volunteers'}:null,
+    activeKids.data?.length?{type:'info',icon:Baby,title:`${activeKids.data.length} criança(s) em atendimento agora`,href:'/kids'}:null,
+    newVisitors.data?.length?{type:'warning',icon:Sparkles,title:`${newVisitors.data.length} visitante(s) precisam de acompanhamento`,href:'/visitors'}:null,
+    birthdays.length?{type:'neutral',icon:Cake,title:`${birthdays.length} aniversário(s) nos próximos 7 dias`,href:'/members'}:null,
+  ].filter(Boolean) as {type:string;icon:any;title:string;href:string}[];
+
+  const weeks=Array.from({length:4},(_,i)=>{
+    const end=new Date(now);end.setDate(end.getDate()-((3-i)*7));end.setHours(23,59,59,999);
+    const start=new Date(end);start.setDate(start.getDate()-6);start.setHours(0,0,0,0);
+    const count=(attendance.data||[]).filter(a=>{const d=new Date(a.occurred_at);return d>=start&&d<=end}).length;
+    return {label:`${start.getDate()}/${start.getMonth()+1}`,count};
+  });
   const maxAttendance=Math.max(1,...weeks.map(w=>w.count));
 
-  const months=Array.from({length:6},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-5+i,1);const next=new Date(d.getFullYear(),d.getMonth()+1,1);const count=(growthMembers.data||[]).filter(m=>{const c=new Date(m.created_at);return c>=d&&c<next}).length;return {label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),count};});
-  const maxGrowth=Math.max(1,...months.map(m=>m.count));
-
   return <>
-    <header className="topbar"><div className="title"><span className="eyebrow">Administração</span><h1>{churchName}</h1><p>Indicadores de pessoas, presença, operação e financeiro.</p></div><div className="actions"><Link className="btn secondary" href="/communications">Publicar aviso</Link><Link className="btn" href="/members/new"><UserPlus size={17}/> Novo membro</Link></div></header>
-    <section className="grid kpis">
-      <div className="card kpi"><span className="metric-icon"><UsersRound size={20}/></span><span className="muted">Membros ativos</span><strong>{members.count||0}</strong><small>base atual da igreja</small></div>
-      <div className="card kpi"><span className="metric-icon"><Sparkles size={20}/></span><span className="muted">Visitantes</span><strong>{visitors.count||0}</strong><small>pipeline de integração</small></div>
-      <div className="card kpi"><span className="metric-icon"><UsersRound size={20}/></span><span className="muted">Células ativas</span><strong>{cells.count||0}</strong><small>grupos em funcionamento</small></div>
-      <div className="card kpi"><span className="metric-icon"><CircleDollarSign size={20}/></span><span className="muted">Saldo do mês</span><strong>{(finance.income-finance.expense).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong><small>{finance.income.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} em entradas</small></div>
+    <header className="page-heading">
+      <div>
+        <span className="page-kicker">{dayLabel(now)}</span>
+        <h1>Bom dia, {profileName.split(' ')[0]}</h1>
+        <p>Aqui está o que precisa da sua atenção hoje em {churchName}.</p>
+      </div>
+      <div className="quick-actions">
+        <Link href="/members/new"><UserPlus size={16}/> Pessoa</Link>
+        <Link href="/visitors/new"><UserRoundPlus size={16}/> Visitante</Link>
+        <Link href="/finance"><CircleDollarSign size={16}/> Lançamento</Link>
+        <Link className="primary" href="/events"><CalendarDays size={16}/> Evento</Link>
+      </div>
+    </header>
+
+    <section className="today-strip">
+      <div className="today-strip-heading"><span>HOJE NA IGREJA</span><strong>{todayEvents.data?.length||0} atividade(s)</strong></div>
+      <div className="today-grid">
+        <div className="today-main">
+          <span className="today-icon"><CalendarDays size={20}/></span>
+          <div><small>Próximo compromisso</small><strong>{todayEvents.data?.[0]?.title||upcomingEvents.data?.[0]?.title||'Nenhum evento hoje'}</strong><span>{todayEvents.data?.[0]?.starts_at?new Date(todayEvents.data[0].starts_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):upcomingEvents.data?.[0]?.starts_at?new Date(upcomingEvents.data[0].starts_at).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'Agenda livre'}</span></div>
+        </div>
+        <div className="today-mini"><Baby size={18}/><div><strong>{activeKids.data?.length||0}</strong><span>Kids agora</span></div></div>
+        <div className="today-mini"><UsersRound size={18}/><div><strong>{pendingSchedules.data?.length||0}</strong><span>Escalas pendentes</span></div></div>
+        <div className="today-mini"><Sparkles size={18}/><div><strong>{newVisitors.data?.length||0}</strong><span>Follow-ups</span></div></div>
+      </div>
     </section>
 
-    <section className="dashboard-charts">
-      <div className="card chart-card"><div className="section-head"><div><span className="eyebrow">Presença</span><h2>Últimas 4 semanas</h2></div><span className="metric-icon"><Activity size={18}/></span></div><div className="bar-chart">{weeks.map(w=><div className="bar-col" key={w.label}><div className="bar-value">{w.count}</div><div className="bar-track"><div className="bar-fill" style={{height:`${Math.max(5,(w.count/maxAttendance)*100)}%`}}/></div><span>{w.label}</span></div>)}</div></div>
-      <div className="card chart-card"><div className="section-head"><div><span className="eyebrow">Crescimento</span><h2>Novos membros</h2></div></div><div className="bar-chart">{months.map(m=><div className="bar-col" key={m.label}><div className="bar-value">{m.count}</div><div className="bar-track"><div className="bar-fill soft" style={{height:`${Math.max(5,(m.count/maxGrowth)*100)}%`}}/></div><span>{m.label}</span></div>)}</div></div>
+    <section className="attention-panel">
+      <div className="section-title"><div><span className="section-eyebrow">Atenção</span><h2>O que precisa ser resolvido</h2></div></div>
+      <div className="attention-list">
+        {attention.length?attention.map(({icon:Icon,title,href,type})=><Link className={'attention-item '+type} href={href} key={title}><span className="attention-icon"><Icon size={17}/></span><strong>{title}</strong><span>Ver agora →</span></Link>):<div className="attention-empty"><CheckCircle2 size={19}/><span>Nada urgente por enquanto.</span></div>}
+      </div>
     </section>
 
-    <section className="content-grid admin-grid"><div className="stack">
-      <section className="card"><div className="section-head"><div><span className="eyebrow">Agenda</span><h2>Próximos eventos</h2></div><Link href="/events"><CalendarPlus size={16}/> Gerenciar</Link></div>{events.data?.length?<div className="table-wrap"><table className="table"><thead><tr><th>Evento</th><th>Data</th><th>Status</th></tr></thead><tbody>{events.data.map(e=><tr key={e.id}><td><Link className="table-link" href={'/events/'+e.id}>{e.title}</Link></td><td>{new Date(e.starts_at).toLocaleString('pt-BR')}</td><td><span className="badge">{e.status}</span></td></tr>)}</tbody></table></div>:<div className="empty">Nenhum evento futuro cadastrado.</div>}</section>
-      <section className="card"><div className="section-head"><h2>Entradas recentes</h2><Link href="/members">Ver membros</Link></div><div className="split-list"><div><h3 className="subhead">Novos membros</h3>{recentMembers.data?.slice(0,5).map(item=><div className="person-row" key={item.id}><span className="avatar mini">{item.full_name.slice(0,1)}</span><div><Link className="table-link" href={'/members/'+item.id}>{item.full_name}</Link><span>{String(item.status)}</span></div></div>)||<div className="empty compact">Sem cadastros.</div>}</div><div><h3 className="subhead">Visitantes recentes</h3>{recentVisitors.data?.length?recentVisitors.data.map(item=><div className="person-row" key={item.id}><span className="avatar mini">{item.full_name.slice(0,1)}</span><div><strong>{item.full_name}</strong><span>{String(item.stage)}</span></div></div>):<div className="empty compact">Sem visitantes.</div>}</div></div></section>
-    </div>
-    <aside className="stack">
-      <section className="card"><div className="section-head"><div><span className="eyebrow">Este mês</span><h2>Aniversariantes</h2></div><span className="metric-icon"><Cake size={18}/></span></div>{birthdays.length?birthdays.slice(0,8).map(m=><div className="mini-item" key={m.id}><Link className="table-link" href={'/members/'+m.id}>{m.full_name}</Link><span>{new Date('2000-'+String(m.birth_date).slice(5)+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'long'})}</span></div>):<div className="empty compact">Nenhum aniversário neste mês.</div>}</section>
-      <section className="card"><span className="eyebrow">Ações rápidas</span><h2>O que precisa ser feito?</h2><div className="action-list"><Link href="/members/new">Cadastrar membro <span>→</span></Link><Link href="/visitors/new">Registrar visitante <span>→</span></Link><Link href="/communications">Publicar comunicado <span>→</span></Link><Link href="/volunteers">Montar escala <span>→</span></Link><Link href="/finance">Lançar financeiro <span>→</span></Link><Link href="/kids">Abrir Kids <span>→</span></Link></div></section>
-      <section className="card finance-card"><span className="eyebrow">Financeiro do mês</span><div className="finance-row"><span>Entradas</span><strong className="positive">{finance.income.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div><div className="finance-row"><span>Saídas</span><strong>{finance.expense.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div><div className="finance-row total"><span>Saldo</span><strong>{(finance.income-finance.expense).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div></section>
-    </aside></section>
+    <section className="overview-grid">
+      <article className="overview-card"><div><span>Membros ativos</span><strong>{members.count||0}</strong></div><span className="overview-trend positive"><ArrowUpRight size={15}/> base atual</span></article>
+      <article className="overview-card"><div><span>Visitantes</span><strong>{visitors.count||0}</strong></div><span className="overview-trend"><Sparkles size={15}/> integração</span></article>
+      <article className="overview-card"><div><span>Células ativas</span><strong>{cells.count||0}</strong></div><span className="overview-trend"><UsersRound size={15}/> grupos</span></article>
+      <article className="overview-card"><div><span>Saldo do mês</span><strong>{money(finance.income-finance.expense)}</strong></div><span className={'overview-trend '+(finance.income-finance.expense>=0?'positive':'negative')}>{finance.income-finance.expense>=0?<ArrowUpRight size={15}/>:<ArrowDownRight size={15}/>} caixa</span></article>
+    </section>
+
+    <section className="dashboard-main-grid">
+      <div className="stack">
+        <section className="panel">
+          <div className="section-title"><div><span className="section-eyebrow">Presença</span><h2>Últimas 4 semanas</h2></div><Link href="/reports">Abrir relatório</Link></div>
+          <div className="modern-chart">
+            {weeks.map(w=><div className="modern-chart-col" key={w.label}><span>{w.count}</span><div><i style={{height:`${Math.max(8,(w.count/maxAttendance)*100)}%`}}/></div><small>{w.label}</small></div>)}
+          </div>
+        </section>
+
+        <section className="panel">
+          <div className="section-title"><div><span className="section-eyebrow">Próximos</span><h2>Agenda da igreja</h2></div><Link href="/calendar">Ver calendário</Link></div>
+          <div className="schedule-list">{upcomingEvents.data?.length?upcomingEvents.data.map(event=><Link href={'/events/'+event.id} className="schedule-row" key={event.id}><div className="schedule-date"><strong>{new Date(event.starts_at).getDate()}</strong><span>{new Date(event.starts_at).toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></div><div><strong>{event.title}</strong><span>{new Date(event.starts_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}{event.address?' • '+event.address:''}</span></div><span className="status-dot"/></Link>):<div className="empty compact">Nenhum evento futuro.</div>}</div>
+        </section>
+      </div>
+
+      <aside className="stack">
+        <section className="panel">
+          <div className="section-title"><div><span className="section-eyebrow">Integração</span><h2>Visitantes recentes</h2></div><Link href="/visitors">Ver todos</Link></div>
+          {newVisitors.data?.length?newVisitors.data.slice(0,5).map(v=><div className="person-list-row" key={v.id}><span className="person-dot">{v.full_name.slice(0,1)}</span><div><strong>{v.full_name}</strong><span>{v.stage==='new'?'Novo visitante':'Em acompanhamento'} • {v.phone||v.email||'sem contato'}</span></div></div>):<div className="empty compact">Sem visitantes pendentes.</div>}
+        </section>
+
+        <section className="panel">
+          <div className="section-title"><div><span className="section-eyebrow">Pessoas</span><h2>Cadastros recentes</h2></div><Link href="/members">Abrir pessoas</Link></div>
+          {recentMembers.data?.length?recentMembers.data.slice(0,5).map(m=><Link className="person-list-row" href={'/members/'+m.id} key={m.id}><span className="person-dot">{m.full_name.slice(0,1)}</span><div><strong>{m.full_name}</strong><span>{String(m.status)}</span></div></Link>):<div className="empty compact">Sem cadastros recentes.</div>}
+        </section>
+
+        <section className="panel finance-summary">
+          <div className="section-title"><div><span className="section-eyebrow">Financeiro</span><h2>Resumo do mês</h2></div><Link href="/finance">Abrir</Link></div>
+          <div className="finance-summary-row"><span>Entradas</span><strong className="positive">{money(finance.income)}</strong></div>
+          <div className="finance-summary-row"><span>Saídas</span><strong>{money(finance.expense)}</strong></div>
+          <div className="finance-summary-row total"><span>Saldo</span><strong>{money(finance.income-finance.expense)}</strong></div>
+        </section>
+      </aside>
+    </section>
   </>;
 }
