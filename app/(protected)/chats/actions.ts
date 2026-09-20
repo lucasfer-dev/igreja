@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { requireChurch } from '@/lib/auth';
+import { requireChurch, requirePermission } from '@/lib/auth';
 
 const messageSchema=z.string().trim().min(1).max(3000);
 
@@ -31,7 +31,7 @@ export async function createChatRoom(formData:FormData){
   const name=String(formData.get('name')||'').trim();
   const description=String(formData.get('description')||'').trim();
   if(name.length<2)return;
-  const {supabase,churchId,user}=await requireChurch();
+  const {supabase,churchId,user}=await requirePermission('communications.manage');
   const {data,error}=await supabase.from('chat_rooms').insert({
     church_id:churchId,
     name,
