@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import {
-  Bell, BookOpen, Boxes, CalendarDays, ChevronRight, Church, CircleDollarSign,
-  Gift, HandHeart, Heart, Home, LayoutDashboard, Megaphone, MonitorPlay, Music2,
-  Newspaper, Search, Settings, ShieldCheck, Sparkles, Users, UsersRound, Baby,
-  ClipboardList, ContactRound, UserRoundCheck, WalletCards
+  Bell, BookOpen, Boxes, CalendarDays, Church, Gift, Heart, Home, LayoutDashboard,
+  Megaphone, MonitorPlay, Music2, Newspaper, Search, Settings, ShieldCheck,
+  Sparkles, Users, UsersRound, Baby, ClipboardList, ContactRound, UserRoundCheck,
+  WalletCards
 } from 'lucide-react';
 import { signOut } from '@/app/actions';
 
@@ -35,7 +35,7 @@ const people=[
   {href:'/kids',label:'Kids',icon:Baby},
 ] as const;
 
-const sunday=[
+const operations=[
   {href:'/events',label:'Eventos',icon:CalendarDays},
   {href:'/volunteers',label:'Escalas',icon:UserRoundCheck},
   {href:'/worship',label:'Louvor',icon:Music2},
@@ -51,10 +51,10 @@ const management=[
 ] as const;
 
 function NavBlock({title,links}:{title:string;links:readonly any[]}){
-  return <section className="side-section">
-    <div className="side-section-title">{title}</div>
-    <nav className="side-nav">
-      {links.map(({href,label,icon:Icon})=><Link href={href} key={href}><Icon size={17}/><span>{label}</span><ChevronRight className="side-chevron" size={14}/></Link>)}
+  return <section className="ref-side-section">
+    <div className="ref-side-title">{title}</div>
+    <nav className="ref-side-nav">
+      {links.map(({href,label,icon:Icon})=><Link href={href} key={href}><Icon size={14}/><span>{label}</span></Link>)}
     </nav>
   </section>;
 }
@@ -62,47 +62,47 @@ function NavBlock({title,links}:{title:string;links:readonly any[]}){
 export function AppShell({children,churchName,profileName,roleName,roleKey}:Props){
   const isStaff=roleKey!=='member';
 
-  return <div className="shell">
-    <aside className="sidebar">
-      <div className="workspace">
-        <span className="workspace-logo"><Church size={21}/></span>
-        <div className="workspace-copy"><strong>{churchName}</strong><span>Gestão da igreja</span></div>
+  return <div className="ref-shell">
+    <aside className="ref-sidebar">
+      <div className="ref-brand">
+        <span><Church size={15}/></span>
+        <strong>{churchName}</strong>
       </div>
 
       {isStaff ? <>
-        <nav className="side-nav side-home">
-          <Link href="/admin"><LayoutDashboard size={17}/><span>Visão geral</span><ChevronRight className="side-chevron" size={14}/></Link>
-          <Link href="/calendar"><CalendarDays size={17}/><span>Agenda</span><ChevronRight className="side-chevron" size={14}/></Link>
+        <nav className="ref-side-nav ref-side-home">
+          <Link href="/admin"><LayoutDashboard size={14}/><span>Dashboard</span></Link>
+          <Link href="/calendar"><CalendarDays size={14}/><span>Agenda</span></Link>
         </nav>
         <NavBlock title="Pessoas" links={people}/>
-        <NavBlock title="Cultos & operação" links={sunday}/>
+        <NavBlock title="Cultos & operação" links={operations}/>
         <NavBlock title="Gestão" links={management}/>
+        <NavBlock title="Sistema" links={[
+          {href:'/search',label:'Busca global',icon:Search},
+          {href:'/settings',label:'Configurações',icon:Settings},
+        ]}/>
       </> : <NavBlock title="Minha igreja" links={memberLinks}/>}
 
-      <div className="sidebar-spacer"/>
-      {isStaff&&<Link className="side-search" href="/search"><Search size={16}/><span>Buscar em tudo</span><kbd>⌘ K</kbd></Link>}
-      <Link className="side-settings" href="/settings"><Settings size={16}/><span>Configurações</span></Link>
-
-      <div className="sidebar-user">
-        <div className="avatar">{profileName.slice(0,1).toUpperCase()}</div>
-        <div className="sidebar-user-copy"><strong>{profileName}</strong><span>{roleName}</span></div>
-        <form action={signOut}><button className="icon-button" title="Sair" type="submit"><ShieldCheck size={17}/></button></form>
+      <div className="ref-sidebar-user">
+        <span className="ref-user-avatar">{profileName.slice(0,1).toUpperCase()}</span>
+        <div><strong>{profileName}</strong><span>{roleName}</span></div>
+        <form action={signOut}><button title="Sair" type="submit"><ShieldCheck size={14}/></button></form>
       </div>
     </aside>
 
-    <main className="main">
-      <div className="app-topline">
-        <div className="topline-left">
-          <span className="topline-church">{churchName}</span>
-          <span className="topline-separator">/</span>
-          <span className="topline-context">{isStaff?'Administração':'Minha igreja'}</span>
+    <main className="ref-main">
+      <header className="ref-topbar">
+        <form action="/search" className="ref-global-search">
+          <Search size={13}/>
+          <input name="q" placeholder="Busca"/>
+        </form>
+        <div className="ref-top-actions">
+          <Link href="/calendar"><CalendarDays size={14}/></Link>
+          <Link href="/notifications"><Bell size={14}/><i/></Link>
+          <span className="ref-top-avatar">{profileName.slice(0,1).toUpperCase()}</span>
         </div>
-        <div className="topline-actions">
-          <Link href="/search" aria-label="Buscar"><Search size={17}/></Link>
-          <Link href="/notifications" aria-label="Notificações"><Bell size={17}/></Link>
-        </div>
-      </div>
-      {children}
+      </header>
+      <div className="ref-page">{children}</div>
     </main>
 
     <nav className="mobile-nav">
