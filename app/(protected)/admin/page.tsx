@@ -43,7 +43,10 @@ export default async function AdminDashboard(){
     return {label:['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][i],count};
   });
   const max=Math.max(1,...months.map(m=>m.count));
-  const today=todayEvents.data?.[0]||upcomingEvents.data?.[0];\n  const scheduleRows=pendingSchedules.data||[];\n  const pendingCount=scheduleRows.filter(s=>s.status==='pending').length;\n  const confirmedCount=scheduleRows.filter(s=>s.status==='confirmed').length;
+  const today=todayEvents.data?.[0]||upcomingEvents.data?.[0];
+  const scheduleRows=pendingSchedules.data||[];
+  const pendingCount=scheduleRows.filter(s=>s.status==='pending').length;
+  const confirmedCount=scheduleRows.filter(s=>s.status==='confirmed').length;
 
   return <>
     <header className="ref-heading">
@@ -55,7 +58,7 @@ export default async function AdminDashboard(){
         <Link href="/members/new"><Plus size={12}/> Pessoa</Link>
         <Link href="/visitors/new"><Plus size={12}/> Visitante</Link>
         <Link className="blue" href="/finance"><Plus size={12}/> Lançamento</Link>
-        <Link className="blue" href="/events"><Plus size={12}/> Evento</Link>
+        <Link className="blue" href="/events/new"><Plus size={12}/> Evento</Link>
       </div>
     </header>
 
@@ -78,7 +81,7 @@ export default async function AdminDashboard(){
       </div>
 
       <div className="ref-card ref-chart-card">
-        <div className="ref-card-title">MEMBROS ATIVOS</div>
+        <div className="ref-card-title">PRESENÇAS NO ANO</div>
         <div className="ref-chart">
           {months.map(m=><div key={m.label}><i style={{height:`${Math.max(8,m.count/max*100)}%`}}/><span>{m.label}</span></div>)}
         </div>
