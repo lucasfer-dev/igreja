@@ -32,3 +32,6 @@ A arquitetura nasce multi-tenant, com isolamento por igreja, RBAC, RLS, auditori
 ## Estado
 
 Fundação inicial em desenvolvimento. O projeto não deve ser tratado como concluído até os fluxos principais estarem integrados ao banco, protegidos por autorização server-side, testados e validados em produção.
+
+
+> Deploy hook: Vercel production deployment configured from the `main` branch.
