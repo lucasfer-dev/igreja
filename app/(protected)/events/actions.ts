@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 const schema = z.object({
   title: z.string().min(2).max(120),
@@ -14,7 +14,7 @@ const schema = z.object({
 });
 
 export async function createEvent(formData: FormData) {
-  const { supabase, churchId, unitId } = await requireChurch();
+  const { supabase, churchId, unitId } = await requirePermission('events.manage');
   const parsed = schema.safeParse({
     title: formData.get('title'),
     startsAt: formData.get('startsAt'),

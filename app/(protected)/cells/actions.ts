@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 const schema = z.object({
   name: z.string().min(2).max(100),
@@ -14,7 +14,7 @@ const schema = z.object({
 });
 
 export async function createCell(formData: FormData) {
-  const { supabase, churchId, unitId } = await requireChurch();
+  const { supabase, churchId, unitId } = await requirePermission('cells.manage');
   const parsed = schema.safeParse({
     name: formData.get('name'),
     weekday: formData.get('weekday'),

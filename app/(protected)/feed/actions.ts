@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 export async function createPost(formData: FormData) {
-  const { supabase, churchId, user } = await requireChurch();
+  const { supabase, churchId, user } = await requirePermission('feed.manage');
   const body = String(formData.get('body') || '').trim();
   const title = String(formData.get('title') || '').trim();
   const postType = String(formData.get('post_type') || 'post').trim();

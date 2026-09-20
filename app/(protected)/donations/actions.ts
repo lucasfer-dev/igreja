@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { requireChurch } from '@/lib/auth';
+import { requireChurch, requirePermission } from '@/lib/auth';
 
 export async function createCampaign(formData:FormData){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('donations.manage');
   const title=String(formData.get('title')||'').trim();
   if(!title) redirect('/donations/campaigns/new?error='+encodeURIComponent('Informe o nome da campanha.'));
 
@@ -33,6 +33,16 @@ export async function registerDonation(formData:FormData){
   const campaignId=String(formData.get('campaign_id')||'');
   const {data:ownMember}=await supabase.from('church_members').select('id').eq('church_id',churchId).eq('auth_user_id',user.id).maybeSingle();
   const memberId=suppliedMemberId||ownMember?.id||'';
+
+  if (suppliedMemberId && suppliedMemberId !== ownMember?.id) {
+    const { data: canManage } = await supabase
+      .from('role_permissions')
+      .select('permission_key')
+      .eq('role_id', (await requireChurch()).roleId)
+      .eq('permission_key', 'donations.manage')
+      .maybeSingle();
+    if (!canManage) redirect('/donations/new?error=' + encodeURIComponent('Você só pode registrar contribuições em seu próprio nome.'));
+  }
 
   if(!memberId) redirect('/donations/new?error='+encodeURIComponent('Nenhum membro foi associado à contribuição.'));
 

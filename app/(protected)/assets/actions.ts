@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 export async function createAsset(formData:FormData){
-  const {supabase,churchId,unitId}=await requireChurch();
+  const {supabase,churchId,unitId}=await requirePermission('assets.manage');
   const name=String(formData.get('name')||'').trim();
   if(!name) redirect('/assets/new?error='+encodeURIComponent('Informe o nome do bem.'));
 

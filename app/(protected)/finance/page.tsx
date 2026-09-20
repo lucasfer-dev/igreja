@@ -1,11 +1,11 @@
 import { ArrowDownRight, ArrowUpRight, CircleDollarSign, Plus, WalletCards } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 import { createTransaction } from './actions';
 
 function money(value:number){return value.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});}
 
 export default async function Finance(){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('finance.read');
   const {data,error}=await supabase.from('transactions').select('id,direction,category,amount,occurred_at,description').eq('church_id',churchId).order('occurred_at',{ascending:false});
   const totals=(data||[]).reduce((acc,row)=>{const n=Number(row.amount);if(row.direction==='income')acc.income+=n;else acc.expense+=n;return acc;},{income:0,expense:0});
   const categories=(data||[]).reduce<Record<string,number>>((acc,row)=>{const key=row.category||'Outros';acc[key]=(acc[key]||0)+Number(row.amount);return acc;},{});

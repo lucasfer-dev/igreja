@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 const memberSchema = z.object({
   full_name: z.string().min(2),
@@ -31,7 +31,7 @@ export async function createMember(formData: FormData) {
   const parsed = memberSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect('/members/new?error=' + encodeURIComponent('Revise os dados informados.'));
 
-  const { supabase, churchId, unitId, user } = await requireChurch();
+  const { supabase, churchId, unitId, user } = await requirePermission('members.create');
   const data = parsed.data;
   const { data: member, error } = await supabase.from('church_members').insert({
     church_id: churchId, unit_id: unitId, full_name: data.full_name,
@@ -59,7 +59,7 @@ export async function updateMember(memberId: string, formData: FormData) {
   const parsed = memberSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect('/members/' + memberId + '?error=' + encodeURIComponent('Revise os dados informados.'));
 
-  const { supabase, churchId, user } = await requireChurch();
+  const { supabase, churchId, user } = await requirePermission('members.update');
   const data = parsed.data;
   const { error } = await supabase.from('church_members').update({
     full_name: data.full_name, email: nullable(data.email), phone: nullable(data.phone),
@@ -86,7 +86,7 @@ export async function addMemberHistory(memberId: string, formData: FormData) {
   const description = String(formData.get('description') || '').trim();
   const type = String(formData.get('type') || 'note').trim();
   if (!title) return;
-  const { supabase, churchId, user } = await requireChurch();
+  const { supabase, churchId, user } = await requirePermission('members.update');
   await supabase.from('member_history').insert({church_id:churchId,member_id:memberId,type,title,description:description||null,created_by:user.id});
   revalidatePath('/members/' + memberId);
 }
