@@ -3,6 +3,7 @@ import { ArrowLeft, MessageCircle, Send } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { requireChurch } from '@/lib/auth';
 import { sendChatMessage } from '../actions';
+import { ChatRealtime } from '@/components/chat-realtime';
 
 export default async function ChatRoomPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{error?:string}>}){
   const {id}=await params;
@@ -20,7 +21,7 @@ export default async function ChatRoomPage({params,searchParams}:{params:Promise
   const names=new Map((profiles||[]).map(p=>[p.id,p.full_name||'Membro']));
   const action=sendChatMessage.bind(null,id);
 
-  return <div className="member-app chat-room-page">
+  return <div className="member-app chat-room-page"><ChatRealtime roomId={id}/>
     <Link className="chat-back" href="/chats"><ArrowLeft size={15}/> Conversas</Link>
     <section className="chat-window">
       <header className="chat-window-head"><span className="chat-room-icon large"><MessageCircle size={20}/></span><div><h1>{room.name}</h1><p>{room.description||'Conversa da comunidade'}</p></div></header>
