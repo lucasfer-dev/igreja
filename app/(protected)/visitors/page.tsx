@@ -1,35 +1,13 @@
+import Link from 'next/link';
 import { requireChurch } from '@/lib/auth';
+import { updateVisitorStage } from './actions';
 
-export default async function Visitors() {
-  const { supabase, churchId } = await requireChurch();
-  const { data, error } = await supabase
-    .from('visitors')
-    .select('id,full_name,email,phone,stage,first_visit_at')
-    .eq('church_id', churchId)
-    .order('created_at', { ascending: false });
+const stages=[['new','Novo'],['contacted','Contatado'],['returned','Retornou'],['integrated','Integrado'],['member','Membro']] as const;
 
-  return (
-    <>
-      <header className="topbar">
-        <div className="title"><h1>Visitantes</h1><p>Pipeline de acompanhamento e integração.</p></div>
-        <a className="btn" href="/visitors/new">Novo visitante</a>
-      </header>
-      <section className="card">
-        {error ? <p className="alert">{error.message}</p> : data?.length ? (
-          <div className="table-wrap">
-            <table className="table">
-              <thead><tr><th>Nome</th><th>Contato</th><th>Etapa</th><th>Primeira visita</th></tr></thead>
-              <tbody>{data.map(visitor => (
-                <tr key={visitor.id}>
-                  <td>{visitor.full_name}</td><td>{visitor.phone || visitor.email || '—'}</td>
-                  <td><span className="badge">{visitor.stage}</span></td>
-                  <td>{visitor.first_visit_at ? new Date(visitor.first_visit_at).toLocaleDateString('pt-BR') : '—'}</td>
-                </tr>
-              ))}</tbody>
-            </table>
-          </div>
-        ) : <div className="empty">Nenhum visitante cadastrado.</div>}
-      </section>
-    </>
-  );
+export default async function Visitors(){
+ const {supabase,churchId}=await requireChurch();
+ const {data,error}=await supabase.from('visitors').select('id,full_name,email,phone,source,stage,first_visit_at').eq('church_id',churchId).order('created_at',{ascending:false});
+ const grouped=stages.map(([key,label])=>({key,label,items:(data||[]).filter(v=>v.stage===key)}));
+ return <><header className="topbar"><div className="title"><span className="eyebrow">Integração</span><h1>Visitantes</h1><p>Acompanhe cada pessoa desde a primeira visita até a integração.</p></div><Link className="btn" href="/visitors/new">Novo visitante</Link></header>
+ {error?<p className="alert">{error.message}</p>:<section className="pipeline">{grouped.map(col=><div className="pipeline-col" key={col.key}><div className="pipeline-head"><strong>{col.label}</strong><span>{col.items.length}</span></div><div className="pipeline-stack">{col.items.length?col.items.map(visitor=>{const action=updateVisitorStage.bind(null,visitor.id);return <article className="visitor-card" key={visitor.id}><strong>{visitor.full_name}</strong><span>{visitor.phone||visitor.email||'Sem contato'}</span><small>{visitor.source||'Origem não informada'}{visitor.first_visit_at?' • '+new Date(visitor.first_visit_at+'T12:00:00').toLocaleDateString('pt-BR'):''}</small><form action={action}><select name="stage" defaultValue={visitor.stage}>{stages.map(([value,label])=><option value={value} key={value}>{label}</option>)}</select><button type="submit">Atualizar</button></form></article>}):<div className="empty compact">Nenhum visitante.</div>}</div></div>)}</section>}</>;
 }
