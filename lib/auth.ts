@@ -1,16 +1,17 @@
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-export async function requireUser() {
+export const requireUser = cache(async function requireUser() {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
 
   if (error || !user) redirect('/login');
 
   return { supabase, user };
-}
+});
 
-export async function requireChurch() {
+export const requireChurch = cache(async function requireChurch() {
   const { supabase, user } = await requireUser();
 
   const { data: membership } = await supabase
@@ -42,7 +43,7 @@ export async function requireChurch() {
     churchColor: (church?.primary_color as string | undefined) || '#2563eb',
     profileName: (profile?.full_name as string | undefined) || user.email?.split('@')[0] || 'Usuário',
   };
-}
+});
 
 export async function requirePermission(permission: string) {
   const context = await requireChurch();
