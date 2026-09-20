@@ -34,11 +34,14 @@ export default async function ServiceOrderPage({searchParams}:{searchParams:Prom
     <section className="workspace-grid">
       <div className="panel">
         <div className="section-title"><div><span className="section-eyebrow">Planejamento</span><h2>Ordens recentes</h2></div></div>
-        {orders?.length?<div className="service-order-list">{orders.map(order=><Link href={'/service-order/'+order.id} key={order.id}>
-          <span className="service-order-icon"><ListOrdered size={17}/></span>
-          <div><strong>{order.title}</strong><span>{order.events?.title||'Sem evento vinculado'}{order.scheduled_at?' • '+new Date(order.scheduled_at).toLocaleString('pt-BR'):''}</span></div>
-          <span className={'module-status '+(order.status==='ready'||order.status==='live'?'active':'inactive')}>{order.status}</span>
-        </Link>)}</div>:<div className="empty">Nenhuma ordem de culto criada.</div>}
+        {orders?.length?<div className="service-order-list">{orders.map(order=>{
+          const eventTitle=Array.isArray(order.events)?order.events[0]?.title:(order.events as {title?:string}|null)?.title;
+          return <Link href={'/service-order/'+order.id} key={order.id}>
+            <span className="service-order-icon"><ListOrdered size={17}/></span>
+            <div><strong>{order.title}</strong><span>{eventTitle||'Sem evento vinculado'}{order.scheduled_at?' • '+new Date(order.scheduled_at).toLocaleString('pt-BR'):''}</span></div>
+            <span className={'module-status '+(order.status==='ready'||order.status==='live'?'active':'inactive')}>{order.status}</span>
+          </Link>;
+        })}</div>:<div className="empty">Nenhuma ordem de culto criada.</div>}
       </div>
 
       <aside id="new-order" className="panel">
