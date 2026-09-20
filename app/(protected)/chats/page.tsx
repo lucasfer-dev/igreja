@@ -5,11 +5,12 @@ import { createChatRoom } from './actions';
 
 export default async function ChatsPage({searchParams}:{searchParams:Promise<{error?:string}>}){
   const qs=await searchParams;
-  const {supabase,churchId,roleKey}=await requireChurch();
+  const {supabase,churchId,roleId}=await requireChurch();
 
-  const [{data:rooms},{data:messages}] = await Promise.all([
+  const [{data:rooms},{data:messages},{data:managePermission}] = await Promise.all([
     supabase.from('chat_rooms').select('id,name,description,room_type,last_message_at').eq('church_id',churchId).order('last_message_at',{ascending:false}),
     supabase.from('chat_messages').select('id,room_id,body,sender_user_id,created_at').eq('church_id',churchId).order('created_at',{ascending:false}).limit(100),
+    supabase.from('role_permissions').select('permission_key').eq('role_id',roleId).eq('permission_key','communications.manage').maybeSingle(),
   ]);
 
   const latestByRoom=new Map<string,any>();
@@ -32,7 +33,7 @@ export default async function ChatsPage({searchParams}:{searchParams:Promise<{er
         <span className="chat-about-icon"><UsersRound size={24}/></span>
         <h2>Comunidade conectada</h2>
         <p>Use os chats para conversar sobre eventos, grupos e assuntos da igreja.</p>
-        {roleKey!=='member'&&<form action={createChatRoom} className="form"><div className="field"><label>Nome da conversa</label><input name="name" placeholder="Ex.: Jovens"/></div><div className="field"><label>Descrição</label><input name="description" placeholder="Sobre o que é este chat?"/></div><button className="primary-submit" type="submit"><Plus size={15}/> Criar chat</button></form>}
+        {managePermission&&<form action={createChatRoom} className="form"><div className="field"><label>Nome da conversa</label><input name="name" placeholder="Ex.: Jovens"/></div><div className="field"><label>Descrição</label><input name="description" placeholder="Sobre o que é este chat?"/></div><button className="primary-submit" type="submit"><Plus size={15}/> Criar chat</button></form>}
       </aside>
     </section>
   </div>;
