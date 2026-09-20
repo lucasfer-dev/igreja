@@ -2,7 +2,7 @@ import Link from 'next/link';
 import {
   CalendarDays, Church, CircleDollarSign, HandHeart, Home, LayoutDashboard,
   Megaphone, Settings, ShieldCheck, Sparkles, Users, UsersRound, Baby, ClipboardList,
-  Bell, BookOpen, Newspaper,
+  Bell, BookOpen, Newspaper, Search,
 } from 'lucide-react';
 import { signOut } from '@/app/actions';
 
@@ -29,6 +29,7 @@ const adminLinks = [
   { href: '/finance', label: 'Financeiro', icon: CircleDollarSign },
   { href: '/communications', label: 'Comunicação', icon: Megaphone },
   { href: '/reports', label: 'Relatórios', icon: ClipboardList },
+  { href: '/search', label: 'Busca global', icon: Search },
   { href: '/settings', label: 'Configurações', icon: Settings },
 ] as const;
 
