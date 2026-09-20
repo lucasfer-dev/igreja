@@ -108,3 +108,116 @@ body{min-height:100vh}a{color:inherit;text-decoration:none}button,input,select,t
 .ref-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}.ref-card-head>span{font-size:9px;font-weight:700}.ref-card-head a{font-size:6px;color:#65758b}.ref-agenda>a,.ref-activities>a{display:grid;grid-template-columns:22px 1fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid #efede8}.ref-agenda>a:last-child,.ref-activities>a:last-child{border-bottom:0}.ref-agenda-icon{width:20px;height:20px;border-radius:4px;background:#f2f3f4;display:grid;place-items:center;color:#68727c}.ref-agenda>a div,.ref-activities>a div{display:grid}.ref-agenda strong,.ref-activities strong{font-size:7px}.ref-agenda small,.ref-activities small{font-size:6px;color:#7c7a75;margin-top:1px}.ref-activity-avatar{width:20px;height:20px;border-radius:50%;background:#e8e8e4;display:grid;place-items:center;font-size:7px;font-weight:800}.ref-empty{font-size:7px;color:#85837d;padding:10px 0}
 @media(max-width:900px){.ref-shell{display:block}.ref-sidebar{display:none}.ref-topbar{display:none}.ref-page{padding:14px 12px 75px}.ref-today-cards,.ref-dashboard-grid{grid-template-columns:1fr 1fr}.ref-heading{display:grid;gap:10px}.ref-quick-actions{flex-wrap:wrap}.mobile-nav{display:flex}}
 @media(max-width:560px){.ref-today-cards,.ref-dashboard-grid{grid-template-columns:1fr}.ref-page{padding-inline:9px}}
+
+
+/* Scale correction: designed to be comfortable at browser zoom 100% */
+@media(min-width:901px){
+  .ref-shell{grid-template-columns:232px minmax(0,1fr)}
+  .ref-sidebar{padding:15px 12px}
+  .ref-brand{gap:9px;padding:3px 7px 15px}
+  .ref-brand>span{width:30px;height:30px}
+  .ref-brand>span svg{width:18px;height:18px}
+  .ref-brand strong{font-size:13px}
+  .ref-side-section{margin-top:13px}
+  .ref-side-title{font-size:8px;padding:0 8px 6px;letter-spacing:.09em}
+  .ref-side-nav{gap:2px}
+  .ref-side-nav a{gap:8px;padding:7px 8px;border-radius:6px;font-size:11px;line-height:1.1}
+  .ref-side-nav a svg{width:16px;height:16px}
+  .ref-side-home{padding-bottom:9px}
+  .ref-sidebar-user{padding:13px 7px 2px;gap:9px}
+  .ref-user-avatar,.ref-top-avatar{width:30px;height:30px;font-size:10px}
+  .ref-sidebar-user strong{font-size:10px}
+  .ref-sidebar-user span{font-size:8px}
+  .ref-sidebar-user button{width:28px;height:28px}
+  .ref-sidebar-user button svg{width:16px;height:16px}
+
+  .ref-topbar{height:54px;padding:0 19px}
+  .ref-global-search{width:310px;height:34px;border-radius:6px;padding:0 10px;gap:8px}
+  .ref-global-search svg{width:15px;height:15px}
+  .ref-global-search input{font-size:10px}
+  .ref-top-actions{gap:9px}
+  .ref-top-actions>a{width:31px;height:31px}
+  .ref-top-actions>a svg{width:16px;height:16px}
+
+  .ref-page{max-width:1240px;padding:25px 28px 38px}
+  .ref-heading{margin-bottom:18px}
+  .ref-heading h1{font-size:28px}
+  .ref-heading p{font-size:10px;margin-top:5px}
+  .ref-quick-actions{gap:6px}
+  .ref-quick-actions a{height:31px;border-radius:6px;padding:0 10px;font-size:9px;gap:5px}
+  .ref-quick-actions a svg{width:14px;height:14px}
+
+  .ref-section-label,.ref-card-title{font-size:9px;margin-bottom:7px}
+  .ref-today-cards{gap:10px;margin-bottom:14px}
+  .ref-today-cards article{min-height:92px;border-radius:7px;padding:11px 12px}
+  .ref-today-cards article>span{font-size:10px;gap:6px}
+  .ref-today-cards article>span svg{width:16px;height:16px}
+  .ref-today-cards article>strong{font-size:23px;margin-top:12px}
+  .ref-today-cards article>small{font-size:9px}
+  .ref-today-cards article>div{gap:6px;margin-top:10px}
+  .ref-today-cards article>div strong{font-size:20px}
+  .ref-today-cards article>div small{font-size:8px}
+
+  .ref-dashboard-grid{gap:11px}
+  .ref-card{border-radius:7px;padding:12px 13px}
+  .ref-attention,.ref-chart-card{min-height:255px}
+  .ref-attention>a{grid-template-columns:18px 1fr 23px;gap:7px;padding:9px 3px;font-size:9px}
+  .ref-attention>a svg{width:14px;height:14px}
+  .ref-attention>a b{min-width:20px;height:20px;font-size:8px}
+  .ref-attention-footer{padding-top:10px}
+  .ref-attention-footer a{font-size:9px}
+
+  .ref-chart{height:150px;gap:9px;padding:7px 8px 0}
+  .ref-chart>div{grid-template-rows:1fr 18px}
+  .ref-chart span{font-size:8px}
+  .ref-chart-metrics{gap:11px;padding-top:11px}
+  .ref-chart-metrics span{font-size:9px}
+  .ref-chart-metrics strong{font-size:13px}
+
+  .ref-card-head{margin-bottom:8px}
+  .ref-card-head>span{font-size:11px}
+  .ref-card-head a{font-size:8px}
+  .ref-agenda>a,.ref-activities>a{grid-template-columns:29px 1fr;gap:8px;padding:8px 0}
+  .ref-agenda-icon,.ref-activity-avatar{width:27px;height:27px}
+  .ref-agenda-icon svg{width:14px;height:14px}
+  .ref-activity-avatar{font-size:9px}
+  .ref-agenda strong,.ref-activities strong{font-size:9px}
+  .ref-agenda small,.ref-activities small{font-size:8px;margin-top:2px}
+  .ref-empty{font-size:9px;padding:14px 0}
+}
+
+/* Keep the rest of the product readable at 100% zoom too */
+@media(min-width:901px){
+  .page-heading h1{font-size:32px}
+  .page-heading p{font-size:14px}
+  .page-kicker,.section-eyebrow{font-size:10px}
+  .people-summary>div{min-height:78px;padding:16px 17px}
+  .summary-icon{width:40px;height:40px}
+  .summary-icon svg{width:20px;height:20px}
+  .people-summary strong{font-size:22px}
+  .people-summary span:last-child{font-size:10px}
+  .directory-toolbar{padding:14px 16px}
+  .directory-search input,.directory-search select,.directory-search button{font-size:11px;padding:10px 11px}
+  .result-count{font-size:10px}
+  .people-table-head,.people-table-row{padding:13px 16px}
+  .people-table-head{font-size:10px}
+  .people-table-row{font-size:11px}
+  .person-primary strong,.person-contact strong{font-size:11px}
+  .person-primary small,.person-contact small{font-size:9px}
+  .soft-status{font-size:9px;padding:5px 8px}
+  .followup-column{min-width:235px}
+  .followup-column-head strong{font-size:11px}
+  .followup-card{padding:12px}
+  .followup-person strong{font-size:11px}
+  .followup-person span,.followup-meta{font-size:9px}
+  .stage-control select,.stage-control button{font-size:9px;padding:8px}
+  .finance-overview article{padding:18px}
+  .finance-overview article>span{font-size:10px}
+  .finance-overview article>strong{font-size:27px}
+  .panel{padding:18px 20px}
+  .section-title h2{font-size:16px}
+  .section-title a{font-size:11px}
+  .field label{font-size:10px}
+  .field input,.field select,.field textarea{font-size:11px;padding:10px 11px}
+  .primary-submit{font-size:11px;padding:11px 13px}
+}
