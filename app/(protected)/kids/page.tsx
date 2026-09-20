@@ -1,10 +1,10 @@
 import { Baby, CheckCircle2, Clock3, Search, ShieldCheck, UserPlus } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 import { addGuardian, checkInChild, checkOutChild, createChild } from './actions';
 
 export default async function KidsPage({searchParams}:{searchParams:Promise<{error?:string;code?:string}>}){
   const qs=await searchParams;
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('kids.read');
 
   const [{data:children},{data:checkins},{data:guardians}]=await Promise.all([
     supabase.from('kids_children').select('*').eq('church_id',churchId).eq('active',true).order('full_name'),
