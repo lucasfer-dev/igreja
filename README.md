@@ -35,3 +35,5 @@ Fundação inicial em desenvolvimento. O projeto não deve ser tratado como conc
 
 
 > Deploy hook: Vercel production deployment configured from the `main` branch.
+
+Build trigger after Supabase SSR typing fix.
