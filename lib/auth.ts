@@ -24,7 +24,7 @@ export async function requireChurch() {
   if (!membership) redirect('/onboarding');
 
   const [{ data: role }, { data: church }, { data: profile }] = await Promise.all([
-    supabase.from('roles').select('key,name').eq('id', membership.role_id).maybeSingle(),
+    supabase.from('roles').select('key,name').eq('id', membership.role_id).eq('church_id', membership.church_id).maybeSingle(),
     supabase.from('churches').select('name,logo_url,primary_color').eq('id', membership.church_id).maybeSingle(),
     supabase.from('profiles').select('full_name,avatar_url').eq('id', user.id).maybeSingle(),
   ]);
@@ -39,7 +39,37 @@ export async function requireChurch() {
     roleName: (role?.name as string | undefined) || 'Membro',
     churchName: (church?.name as string | undefined) || 'Minha igreja',
     churchLogo: church?.logo_url as string | null | undefined,
-    churchColor: (church?.primary_color as string | undefined) || '#0f766e',
+    churchColor: (church?.primary_color as string | undefined) || '#2563eb',
     profileName: (profile?.full_name as string | undefined) || user.email?.split('@')[0] || 'Usuário',
   };
+}
+
+export async function requirePermission(permission: string) {
+  const context = await requireChurch();
+
+  const { data: granted } = await context.supabase
+    .from('role_permissions')
+    .select('permission_key')
+    .eq('role_id', context.roleId)
+    .eq('permission_key', permission)
+    .maybeSingle();
+
+  if (!granted) redirect('/dashboard?error=' + encodeURIComponent('Você não tem permissão para acessar esta área.'));
+
+  return context;
+}
+
+export async function requireAnyPermission(permissions: string[]) {
+  const context = await requireChurch();
+
+  const { data: granted } = await context.supabase
+    .from('role_permissions')
+    .select('permission_key')
+    .eq('role_id', context.roleId)
+    .in('permission_key', permissions)
+    .limit(1);
+
+  if (!granted?.length) redirect('/dashboard?error=' + encodeURIComponent('Você não tem permissão para acessar esta área.'));
+
+  return context;
 }
