@@ -1,9 +1,9 @@
 import { Bell, Megaphone, MessageSquareText, Plus, Send } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 import { publishAnnouncement } from './actions';
 
 export default async function CommunicationsPage(){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('communications.manage');
   const [{data:announcements},{count:userCount}] = await Promise.all([
     supabase.from('announcements').select('id,title,body,published_at,published').eq('church_id',churchId).order('published_at',{ascending:false}).limit(30),
     supabase.from('church_users').select('*',{count:'exact',head:true}).eq('church_id',churchId).eq('status','active'),
