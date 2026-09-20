@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { requireChurch } from '@/lib/auth';
 
@@ -21,9 +22,9 @@ export async function createCell(formData: FormData) {
     address: formData.get('address') || undefined,
     capacity: formData.get('capacity') || undefined,
   });
-  if (!parsed.success) return;
+  if (!parsed.success) redirect('/cells/new?error=' + encodeURIComponent('Revise os dados informados.'));
 
-  await supabase.from('cells').insert({
+  const { data, error } = await supabase.from('cells').insert({
     church_id: churchId,
     unit_id: unitId,
     name: parsed.data.name,
@@ -32,7 +33,11 @@ export async function createCell(formData: FormData) {
     address: parsed.data.address || null,
     capacity: parsed.data.capacity ? Number(parsed.data.capacity) : null,
     active: true,
-  });
+  }).select('id').single();
+
+  if (error || !data) redirect('/cells/new?error=' + encodeURIComponent(error?.message || 'Não foi possível criar a célula.'));
+
   revalidatePath('/cells');
   revalidatePath('/admin');
+  redirect('/cells/' + data.id);
 }

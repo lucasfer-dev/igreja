@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { requireChurch } from '@/lib/auth';
 
@@ -21,9 +22,9 @@ export async function createEvent(formData: FormData) {
     address: formData.get('address') || undefined,
     capacity: formData.get('capacity') || undefined,
   });
-  if (!parsed.success) return;
+  if (!parsed.success) redirect('/events/new?error='+encodeURIComponent('Revise os dados informados.'));
 
-  await supabase.from('events').insert({
+  const {data,error}=await supabase.from('events').insert({
     church_id: churchId,
     unit_id: unitId,
     title: parsed.data.title,
@@ -32,9 +33,11 @@ export async function createEvent(formData: FormData) {
     address: parsed.data.address || null,
     capacity: parsed.data.capacity ? Number(parsed.data.capacity) : null,
     status: 'published',
-  });
+  }).select('id').single();
 
+  if(error||!data) redirect('/events/new?error='+encodeURIComponent(error?.message||'Não foi possível criar o evento.'));
   revalidatePath('/events');
   revalidatePath('/admin');
   revalidatePath('/dashboard');
+  redirect('/events/'+data.id);
 }
