@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CalendarDays, CheckCircle2, MapPin, MessageCircle, UserRoundCheck, Users } from 'lucide-react';
+import { CalendarDays, CheckCircle2, MapPin, UserRoundCheck, Users } from 'lucide-react';
 import { requireChurch } from '@/lib/auth';
 import { whatsappLink } from '@/lib/whatsapp';
 import { checkInRegistration, registerForEvent } from './actions';
+import { ShareEventActions } from '@/components/share-event-actions';
 
 export default async function EventDetail({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{error?:string;message?:string}>}){
   const {id}=await params; const qs=await searchParams;
@@ -27,7 +28,7 @@ export default async function EventDetail({params,searchParams}:{params:Promise<
     <header className="event-workspace-hero">
       <div><span className="module-status active">{event.status}</span><h1>{event.title}</h1><p>{event.description||'Evento da igreja.'}</p><div className="workspace-meta"><span><CalendarDays size={14}/>{new Date(event.starts_at).toLocaleString('pt-BR')}</span>{event.address&&<span><MapPin size={14}/>{event.address}</span>}</div></div>
       <div className="quick-actions">
-        <a className="module-secondary" href={whatsappLink(null,invite)} target="_blank" rel="noreferrer"><MessageCircle size={15}/> Convidar pelo WhatsApp</a>
+        <ShareEventActions title={event.title} text={invite} whatsappUrl={whatsappLink(null,invite)}/>
         {!isStaff&&!isRegistered&&<form action={register}><button className="module-primary" type="submit">Quero participar</button></form>}
         {!isStaff&&isRegistered&&<span className="success-chip"><CheckCircle2 size={16}/> Inscrição confirmada</span>}
       </div>

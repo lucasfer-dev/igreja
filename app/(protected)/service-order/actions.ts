@@ -129,3 +129,30 @@ export async function updateServiceOrderStatus(orderId:string,formData:FormData)
   revalidatePath('/service-order');
   revalidatePath('/service-order/'+orderId);
 }
+
+
+export async function reorderServiceOrderItems(orderId:string,orderedIds:string[]){
+  const parsed=z.array(z.string().uuid()).min(1).max(200).safeParse(orderedIds);
+  if(!parsed.success)return;
+  const {supabase,churchId}=await requirePermission('service_order.manage');
+  const {data:items}=await supabase.from('service_order_items')
+    .select('id,position')
+    .eq('church_id',churchId)
+    .eq('order_id',orderId)
+    .order('position');
+
+  if(!items||items.length!==parsed.data.length)return;
+  const existing=new Set(items.map(item=>item.id));
+  if(parsed.data.some(id=>!existing.has(id)))return;
+
+  for(const item of items){
+    await supabase.from('service_order_items').update({position:item.position+1000000})
+      .eq('church_id',churchId).eq('order_id',orderId).eq('id',item.id);
+  }
+  for(let index=0;index<parsed.data.length;index++){
+    await supabase.from('service_order_items').update({position:index+1})
+      .eq('church_id',churchId).eq('order_id',orderId).eq('id',parsed.data[index]);
+  }
+  revalidatePath('/service-order/'+orderId);
+  revalidatePath('/service-order');
+}
