@@ -14,6 +14,12 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   return (
     <AppShell
       churchName={context.churchName}
+      churchShortName={context.churchShortName}
+      churchLogo={context.churchLogo}
+      churchColor={context.churchColor}
+      churchSecondaryColor={context.churchSecondaryColor}
+      churchAccentColor={context.churchAccentColor}
+      churchBackgroundColor={context.churchBackgroundColor}
       profileName={context.profileName}
       roleName={context.roleName}
       roleKey={context.roleKey}

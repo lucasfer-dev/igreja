@@ -2,8 +2,12 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'ChurchOS',
-  description: 'Gestão integrada para igrejas',
+  applicationName: 'PIBJG',
+  title: {
+    default: 'PIBJG',
+    template: '%s | PIBJG',
+  },
+  description: 'Ecossistema digital da Primeira Igreja Batista em Jardim Gláucia.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

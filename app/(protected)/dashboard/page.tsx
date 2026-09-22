@@ -13,7 +13,7 @@ export default async function MemberDashboard(){
     supabase.from('events').select('id,title,description,starts_at,address,banner_url,category').eq('church_id',churchId).gte('starts_at',now).order('starts_at').limit(6),
     supabase.from('notifications').select('id,title,body,type,created_at,read_at').eq('church_id',churchId).eq('user_id',user.id).is('archived_at',null).order('created_at',{ascending:false}).limit(5),
     supabase.from('church_members').select('id,full_name,status').eq('church_id',churchId).eq('auth_user_id',user.id).maybeSingle(),
-    supabase.from('news_posts').select('id,title,summary,body,featured,published_at').eq('church_id',churchId).eq('published',true).order('featured',{ascending:false}).order('published_at',{ascending:false}).limit(4),
+    supabase.from('news_posts').select('id,title,summary,body,featured,published_at,category').eq('church_id',churchId).eq('published',true).lte('published_at',now).in('audience',['all','members']).order('featured',{ascending:false}).order('published_at',{ascending:false}).limit(4),
     supabase.from('content_library').select('id,title,description,category,content_type,url,media_url').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(4),
     supabase.from('chat_rooms').select('id,name,description,room_type,last_message_at').eq('church_id',churchId).order('last_message_at',{ascending:false}).limit(3),
   ]);
@@ -55,7 +55,7 @@ export default async function MemberDashboard(){
       <div className="stack">
         <section className="member-panel">
           <div className="member-section-head"><div><span>NOTÍCIAS</span><h2>Últimas da igreja</h2></div><Link href="/news">Ver todas</Link></div>
-          {news.data?.length?<div className="member-update-list">{news.data.map(item=><article key={item.id}><span className="member-update-icon"><Newspaper size={17}/></span><div><strong>{item.title}</strong><p>{item.summary||item.body}</p><small>{item.featured?'Destaque • ':''}{new Date(item.published_at).toLocaleString('pt-BR')}</small></div></article>)}</div>:<div className="member-empty">Nenhuma notícia publicada.</div>}
+          {news.data?.length?<div className="member-update-list">{news.data.map(item=><article key={item.id}><span className="member-update-icon"><Newspaper size={17}/></span><div><strong>{item.title}</strong><p>{item.summary||item.body}</p><small>{item.category||'Igreja'} • {item.featured?'Destaque • ':''}{new Date(item.published_at).toLocaleString('pt-BR')}</small></div></article>)}</div>:<div className="member-empty">Nenhuma notícia publicada.</div>}
         </section>
 
         <section className="member-panel">
@@ -77,7 +77,7 @@ export default async function MemberDashboard(){
           {notifications.data?.length?<div className="member-notice-list">{notifications.data.map(n=><Link href="/notifications" key={n.id} className={!n.read_at?'unread':''}><span><Bell size={15}/></span><div><strong>{n.title}</strong><small>{n.body||'Nova atualização.'}</small></div></Link>)}</div>:<div className="member-empty">Você está em dia.</div>}
         </section>
 
-        <section className="member-prayer"><HeartHandshake size={22}/><div><strong>Como podemos orar por você?</strong><p>Envie um pedido de oração para a equipe pastoral.</p></div><Link href="/profile">Enviar pedido</Link></section>
+        <section className="member-prayer"><HeartHandshake size={22}/><div><strong>Como podemos orar por você?</strong><p>Envie um pedido de oração para a equipe pastoral.</p></div><Link href="/prayer">Enviar pedido</Link></section>
       </aside>
     </section>
   </div>;

@@ -5,12 +5,19 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { requirePermission } from '@/lib/auth';
 
+const interests=['small_group','baptism','pastoral_visit','ministry','just_visiting'] as const;
 const visitorSchema=z.object({
-  full_name:z.string().min(2),
+  full_name:z.string().trim().min(2).max(120),
   email:z.string().email().optional().or(z.literal('')),
-  phone:z.string().optional(),
-  source:z.string().optional(),
-  whatsapp_opt_in:z.string().optional()
+  phone:z.string().trim().optional(),
+  source:z.string().trim().optional(),
+  birth_date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal('')),
+  visit_status:z.enum(['first_time','returning']).optional(),
+  location_status:z.enum(['local','other_city']).optional(),
+  interests:z.array(z.enum(interests)).max(5),
+  prayer_request:z.string().trim().max(2000).optional().or(z.literal('')),
+  whatsapp_opt_in:z.boolean(),
+  lgpd_consent:z.literal(true),
 });
 
 async function queueRules(supabase:any,churchId:string,visitor:{id:string;phone:string|null;whatsapp_opt_in:boolean},stage:string){
@@ -27,18 +34,39 @@ async function queueRules(supabase:any,churchId:string,visitor:{id:string;phone:
 }
 
 export async function createVisitor(formData:FormData){
-  const parsed=visitorSchema.safeParse(Object.fromEntries(formData));
-  if(!parsed.success) redirect('/visitors/new?error='+encodeURIComponent('Revise os dados informados.'));
+  const parsed=visitorSchema.safeParse({
+    full_name:formData.get('full_name'),
+    email:formData.get('email')||'',
+    phone:formData.get('phone')||'',
+    source:formData.get('source')||'',
+    birth_date:formData.get('birth_date')||'',
+    visit_status:formData.get('visit_status')||undefined,
+    location_status:formData.get('location_status')||undefined,
+    interests:formData.getAll('interests').map(String),
+    prayer_request:formData.get('prayer_request')||'',
+    whatsapp_opt_in:formData.get('whatsapp_opt_in')==='on',
+    lgpd_consent:formData.get('lgpd_consent')==='on',
+  });
+  if(!parsed.success) redirect('/visitors/new?error='+encodeURIComponent('Revise os dados e confirme o consentimento LGPD.'));
   const {supabase,churchId,unitId}=await requirePermission('visitors.manage');
-  const consent=parsed.data.whatsapp_opt_in==='on';
+  const now=new Date();
   const {data,error}=await supabase.from('visitors').insert({
-    full_name:parsed.data.full_name,email:parsed.data.email||null,phone:parsed.data.phone||null,source:parsed.data.source||null,
-    church_id:churchId,unit_id:unitId,stage:'new',first_visit_at:new Date().toISOString().slice(0,10),
-    whatsapp_opt_in:consent,whatsapp_opt_in_at:consent?new Date().toISOString():null
+    full_name:parsed.data.full_name,email:parsed.data.email||null,phone:parsed.data.phone||null,source:parsed.data.source||'cadastro_interno',
+    church_id:churchId,unit_id:unitId,stage:'new',first_visit_at:now.toISOString().slice(0,10),
+    birth_date:parsed.data.birth_date||null,visit_status:parsed.data.visit_status||null,location_status:parsed.data.location_status||null,
+    interests:parsed.data.interests,prayer_request:parsed.data.prayer_request||null,
+    whatsapp_opt_in:parsed.data.whatsapp_opt_in,whatsapp_opt_in_at:parsed.data.whatsapp_opt_in?now.toISOString():null,
+    lgpd_consent:true,lgpd_consent_at:now.toISOString()
   }).select('id,phone,whatsapp_opt_in').single();
   if(error||!data) redirect('/visitors/new?error='+encodeURIComponent(error?.message||'Não foi possível salvar.'));
+
+  if(parsed.data.prayer_request){
+    await supabase.from('visitor_care_requests').insert({
+      church_id:churchId,visitor_id:data.id,body:parsed.data.prayer_request,status:'new',confidential:true
+    });
+  }
   await queueRules(supabase,churchId,data,'new');
-  revalidatePath('/visitors'); revalidatePath('/communications'); redirect('/visitors');
+  revalidatePath('/visitors'); revalidatePath('/communications'); revalidatePath('/care'); redirect('/visitors');
 }
 
 export async function updateVisitorStage(visitorId:string,formData:FormData){

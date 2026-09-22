@@ -16,7 +16,7 @@ export default async function CommunicationsPage(){
     supabase.from('ministries').select('id,name').eq('church_id',churchId).eq('active',true).order('name'),
     supabase.from('events').select('id,title,starts_at,address').eq('church_id',churchId).gte('starts_at',now).order('starts_at').limit(20),
     supabase.from('church_members').select('id,full_name').eq('church_id',churchId).neq('status','inactive').not('auth_user_id','is',null).order('full_name').limit(250),
-    supabase.from('news_posts').select('id,title,published_at,featured').eq('church_id',churchId).order('published_at',{ascending:false}).limit(8),
+    supabase.from('news_posts').select('id,title,published_at,featured,category,audience').eq('church_id',churchId).order('published_at',{ascending:false}).limit(8),
     supabase.from('whatsapp_followup_rules').select('id,name,trigger_stage,delay_hours,template_name,active').eq('church_id',churchId).order('created_at',{ascending:false}),
     supabase.from('whatsapp_outbox').select('status').eq('church_id',churchId)
   ]);
@@ -60,14 +60,19 @@ export default async function CommunicationsPage(){
 
     <section className="communication-layout" id="noticias">
       <div className="panel"><div className="section-title"><div><span className="section-eyebrow">Conteúdo</span><h2>Últimas notícias</h2></div><a href="/news">Ver no app</a></div>
-        {news.data?.length?news.data.map(item=><div className="communication-item" key={item.id}><span className="communication-icon"><Newspaper size={16}/></span><div><strong>{item.title}</strong><span>{new Date(item.published_at).toLocaleString('pt-BR')} {item.featured?'• Destaque':''}</span></div></div>):<div className="empty">Nenhuma notícia publicada.</div>}
+        {news.data?.length?news.data.map(item=><div className="communication-item" key={item.id}><span className="communication-icon"><Newspaper size={16}/></span><div><strong>{item.title}</strong><span>{item.category} • {item.audience==='leadership'?'Liderança':item.audience==='all'?'Todos':'Membros'} • {new Date(item.published_at).toLocaleString('pt-BR')} {item.featured?'• Destaque':''}</span></div></div>):<div className="empty">Nenhuma notícia publicada.</div>}
       </div>
       <aside className="panel"><div className="section-title"><div><span className="section-eyebrow">Notícias</span><h2>Nova publicação</h2></div></div>
         <form action={publishNews} className="form">
           <div className="field"><label>Título</label><input name="title" required/></div>
           <div className="field"><label>Resumo</label><input name="summary" maxLength={240}/></div>
+          <div className="form-row">
+            <div className="field"><label>Categoria</label><select name="category" defaultValue="Igreja"><option>Igreja</option><option>Jovens</option><option>Crianças</option><option>Pequenos Grupos</option><option>Ministério</option><option>Eventos</option><option>Comunicados</option></select></div>
+            <div className="field"><label>Público</label><select name="audience" defaultValue="members"><option value="members">Membros</option><option value="all">Todos os usuários</option><option value="leadership">Somente liderança</option></select></div>
+          </div>
           <div className="field"><label>Texto</label><textarea name="body" rows={7} required/></div>
-          <div className="field"><label>Link de imagem/mídia</label><input name="cover_url" type="url"/></div>
+          <div className="field"><label>Link de imagem/mídia</label><input name="cover_url" type="url" placeholder="https://..."/></div>
+          <div className="field"><label>Publicar em</label><input name="publish_at" type="datetime-local"/><small className="field-help">Deixe vazio para publicar agora.</small></div>
           <label><input name="featured" type="checkbox"/> Marcar como destaque</label>
           <button className="primary-submit" type="submit"><Newspaper size={15}/> Publicar notícia</button>
         </form>
