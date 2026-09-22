@@ -1,45 +1,39 @@
-# ChurchOS
+# Igreja One — MVP Visual Local
 
-Plataforma SaaS multi-tenant de gestão para igrejas, construída com Next.js, TypeScript, Supabase e PostgreSQL.
+Versão demonstrativa e navegável do projeto de gestão para igrejas.
 
-## Referências de produto
+Esta branch foi preparada para apresentação visual do produto sem depender de banco de dados, autenticação ou configuração do Supabase.
 
-Este projeto usa como referências de produto, funcionalidades, UX e modelo de negócio — sem copiar visual ou código:
+## Como executar
 
-- https://inchurch.com.br/
-- https://nossaigreja.app/
-- https://gochurchapp.com.br/
+```bash
+npm install
+npm run dev
+```
 
-## Objetivo
+Depois, abra:
 
-Oferecer duas experiências principais:
+```
+http://localhost:3000
+```
 
-1. Painel administrativo da igreja.
-2. Portal/app mobile-first para membros e visitantes.
+A aplicação redireciona automaticamente para o mockup visual em `/mockup`.
 
-A arquitetura nasce multi-tenant, com isolamento por igreja, RBAC, RLS, auditoria e suporte futuro a multiunidades.
+## O que está disponível no mockup
 
-## Stack
+- Dashboard com indicadores
+- Gestão visual de membros
+- Ordem do culto
+- Agenda e eventos
+- Ministérios
+- Financeiro
+- Comunicação
+- Layout responsivo para desktop e celular
 
-- Next.js App Router
-- React
-- TypeScript
-- Supabase Auth
-- PostgreSQL / Supabase
-- Supabase Storage
-- Vercel
+Todos os dados desta versão são demonstrativos e ficam definidos localmente na interface. Nenhuma conexão com banco de dados é necessária para navegar pelo mockup.
 
-## Estado
+## Branch
 
-Fundação inicial em desenvolvimento. O projeto não deve ser tratado como concluído até os fluxos principais estarem integrados ao banco, protegidos por autorização server-side, testados e validados em produção.
+`local-visual-mvp`
 
-
-> Deploy hook: Vercel production deployment configured from the `main` branch.
-
-Build trigger after Supabase SSR typing fix.
-
-
-Vercel redeploy trigger: 1789924990794
-
-
-Redeploy trigger: 2026-09-20T18:20:00Z
+A implementação original com Supabase e demais módulos continua preservada na branch principal.
