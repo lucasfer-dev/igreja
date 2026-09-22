@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Baby, CalendarDays, Clock3, MessageCircle, Newspaper, Plus, Sparkles, UsersRound, Zap } from 'lucide-react';
+import { Baby, CalendarDays, Clock3, HeartHandshake, Newspaper, Plus, Sparkles, UsersRound, Zap } from 'lucide-react';
 import { requirePermission } from '@/lib/auth';
 
 export default async function AdminDashboard(){
@@ -8,7 +8,7 @@ export default async function AdminDashboard(){
   const todayStart=new Date(now); todayStart.setHours(0,0,0,0);
   const todayEnd=new Date(now); todayEnd.setHours(23,59,59,999);
 
-  const [members,visitors,upcomingEvents,todayEvents,pendingSchedules,activeKids,pendingVisitors,recentActivity,attendance,news,followups]=await Promise.all([
+  const [members,visitors,upcomingEvents,todayEvents,pendingSchedules,activeKids,pendingVisitors,recentActivity,attendance,news,followups,visitorCare,memberCare]=await Promise.all([
     supabase.from('church_members').select('*',{count:'exact',head:true}).eq('church_id',churchId).neq('status','inactive'),
     supabase.from('visitors').select('*',{count:'exact',head:true}).eq('church_id',churchId),
     supabase.from('events').select('id,title,starts_at,address').eq('church_id',churchId).gte('starts_at',now.toISOString()).order('starts_at').limit(6),
@@ -19,7 +19,9 @@ export default async function AdminDashboard(){
     supabase.from('church_members').select('id,full_name,status,created_at').eq('church_id',churchId).order('created_at',{ascending:false}).limit(5),
     supabase.from('attendances').select('occurred_at').eq('church_id',churchId).gte('occurred_at',new Date(now.getFullYear(),0,1).toISOString()),
     supabase.from('news_posts').select('id,title,published_at').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false}).limit(5),
-    supabase.from('whatsapp_outbox').select('id,status').eq('church_id',churchId).in('status',['pending','processing'])
+    supabase.from('whatsapp_outbox').select('id,status').eq('church_id',churchId).in('status',['pending','processing']),
+    supabase.from('visitor_care_requests').select('id',{count:'exact',head:true}).eq('church_id',churchId).neq('status','completed'),
+    supabase.from('prayer_requests').select('id',{count:'exact',head:true}).eq('church_id',churchId).neq('status','completed')
   ]);
 
   const months=Array.from({length:12},(_,i)=>{
@@ -57,7 +59,7 @@ export default async function AdminDashboard(){
         <Link href="/volunteers"><Clock3 size={12}/><span>Escalas aguardando confirmação</span><b>{pendingCount}</b></Link>
         <Link href="/visitors"><Sparkles size={12}/><span>Visitantes recentes sem contato</span><b>{pendingVisitors.data?.length||0}</b></Link>
         <Link href="/communications#whatsapp"><Zap size={12}/><span>Follow-ups aguardando envio</span><b>{followups.data?.length||0}</b></Link>
-        <Link href="/communications#noticias"><Newspaper size={12}/><span>Notícias publicadas recentemente</span><b>{news.data?.length||0}</b></Link>
+        <Link href="/care"><HeartHandshake size={12}/><span>Pedidos de oração e cuidado em aberto</span><b>{(visitorCare.count||0)+(memberCare.count||0)}</b></Link>
       </div>
 
       <div className="ref-card ref-chart-card">
