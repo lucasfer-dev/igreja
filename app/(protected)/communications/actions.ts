@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { requirePermission } from '@/lib/auth';
 
 const announcementSchema=z.object({title:z.string().min(3).max(120),body:z.string().min(3).max(2000),audience:z.string().min(1)});
-const newsSchema=z.object({title:z.string().min(3).max(140),summary:z.string().max(240).optional(),body:z.string().min(10).max(6000),cover_url:z.string().url().optional().or(z.literal('')),featured:z.boolean()});
+const newsSchema=z.object({title:z.string().min(3).max(140),summary:z.string().max(240).optional(),body:z.string().min(10).max(6000),cover_url:z.string().url().optional().or(z.literal('')),featured:z.boolean(),category:z.string().min(2).max(60),audience:z.enum(['all','members','leadership']),publish_at:z.string().optional().or(z.literal(''))});
 const ruleSchema=z.object({name:z.string().min(3).max(100),trigger_stage:z.enum(['new','contacted','returned','integrated','member']),delay_hours:z.coerce.number().int().min(0).max(720),template_name:z.string().min(2).max(120),language_code:z.string().min(2).max(20),preview_text:z.string().max(500).optional()});
 
 type AudienceType='church'|'unit'|'cell'|'ministry'|'event'|'person';
@@ -60,12 +60,16 @@ export async function publishNews(formData:FormData){
   const {supabase,churchId,user}=await requirePermission('communications.manage');
   const parsed=newsSchema.safeParse({
     title:formData.get('title'),summary:formData.get('summary')||undefined,body:formData.get('body'),
-    cover_url:formData.get('cover_url')||'',featured:formData.get('featured')==='on'
+    cover_url:formData.get('cover_url')||'',featured:formData.get('featured')==='on',category:formData.get('category')||'Igreja',
+    audience:formData.get('audience')||'members',publish_at:formData.get('publish_at')||''
   });
   if(!parsed.success) return;
+  const scheduled=parsed.data.publish_at?new Date(parsed.data.publish_at):new Date();
+  if(Number.isNaN(scheduled.getTime())) return;
   await supabase.from('news_posts').insert({
     church_id:churchId,title:parsed.data.title,summary:parsed.data.summary||null,body:parsed.data.body,
-    cover_url:parsed.data.cover_url||null,featured:parsed.data.featured,published:true,created_by:user.id
+    cover_url:parsed.data.cover_url||null,featured:parsed.data.featured,category:parsed.data.category,audience:parsed.data.audience,
+    published:true,published_at:scheduled.toISOString(),created_by:user.id
   });
   revalidatePath('/communications'); revalidatePath('/news'); revalidatePath('/dashboard');
 }
