@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowDown, ArrowLeft, ArrowUp, Clock3, GripVertical, ListOrdered, Plus, Trash2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { requirePermission } from '@/lib/auth';
+import { ServiceOrderDragList } from '@/components/service-order-drag-list';
 import { addServiceOrderItem, moveServiceOrderItem, removeServiceOrderItem, updateServiceOrderItem, updateServiceOrderStatus } from '../actions';
 
 const typeLabels:Record<string,string>={
@@ -88,6 +89,8 @@ export default async function ServiceOrderDetail({params,searchParams}:{params:P
             <button type="submit"><Plus size={14}/>{title}</button>
           </form>)}
         </div>
+
+        {items?.length?<ServiceOrderDragList orderId={id} items={items.map(item=>({id:item.id,title:item.title,item_type:item.item_type,position:item.position}))}/>:null}
 
         {items?.length?<div className="service-builder-list">{items.map((item,index)=>{
           const up=moveServiceOrderItem.bind(null,id,item.id,'up');
