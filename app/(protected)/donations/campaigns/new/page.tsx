@@ -1,8 +1,0 @@
-import Link from 'next/link';
-import { ArrowLeft, Target } from 'lucide-react';
-import { createCampaign } from '../../actions';
-
-export default async function NewCampaign({searchParams}:{searchParams:Promise<{error?:string}>}){
-  const qs=await searchParams;
-  return <div className="creation-page"><Link className="creation-back" href="/donations"><ArrowLeft size={15}/> Voltar para dízimos & ofertas</Link><div className="creation-layout"><section className="creation-intro"><span className="creation-icon"><Target size={23}/></span><span className="module-kicker">Campanha</span><h1>Novo propósito de contribuição</h1><p>Crie uma campanha com objetivo claro, prazo e meta financeira. O progresso será calculado pelas contribuições vinculadas.</p></section><section className="creation-form-panel">{qs.error&&<p className="alert">{qs.error}</p>}<form action={createCampaign} className="form"><div className="field"><label>Nome da campanha</label><input name="title" placeholder="Ex.: Reforma do templo" required/></div><div className="field"><label>Descrição</label><textarea name="description" rows={4}/></div><div className="field"><label>Meta financeira</label><input name="goal_amount" type="number" min="0" step="0.01"/></div><div className="form-row"><div className="field"><label>Início</label><input name="starts_at" type="datetime-local"/></div><div className="field"><label>Encerramento</label><input name="ends_at" type="datetime-local"/></div></div><div className="creation-actions"><Link href="/donations">Cancelar</Link><button className="primary-submit" type="submit">Criar campanha</button></div></form></section></div></div>;
-}
