@@ -1,9 +1,21 @@
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { Bell, CalendarDays, Church, Home, LogOut, MessageCircle, Newspaper, UserRound } from 'lucide-react';
 import { signOut } from '@/app/actions';
 import styles from './member-shell.module.css';
 
-type Props = { children: React.ReactNode; churchName: string; profileName: string; unreadCount: number; };
+type Props = {
+  children: React.ReactNode;
+  churchName: string;
+  churchShortName: string;
+  churchLogo?: string | null;
+  churchColor: string;
+  churchSecondaryColor: string;
+  churchAccentColor: string;
+  churchBackgroundColor: string;
+  profileName: string;
+  unreadCount: number;
+};
 
 const links = [
   { href: '/dashboard', label: 'Início', icon: Home },
@@ -13,12 +25,23 @@ const links = [
   { href: '/profile', label: 'Perfil', icon: UserRound },
 ] as const;
 
-export function MemberShell({ children, churchName, profileName, unreadCount }: Props) {
+export function MemberShell({
+  children,churchName,churchShortName,churchLogo,churchColor,churchSecondaryColor,
+  churchAccentColor,churchBackgroundColor,profileName,unreadCount
+}: Props) {
+  const themeStyle={
+    '--brand':churchColor,
+    '--brand-dark':churchSecondaryColor,
+    '--brand-accent':churchAccentColor,
+    '--church-background':churchBackgroundColor,
+  } as CSSProperties;
+
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} style={themeStyle}>
       <header className={styles.header}>
         <Link href="/dashboard" className={styles.brand}>
-          <span><Church size={18} /></span><div><strong>{churchName}</strong><small>Comunidade</small></div>
+          <span>{churchLogo?<img src={churchLogo} alt=""/>:<Church size={18} />}</span>
+          <div><strong>{churchShortName}</strong><small>{churchName}</small></div>
         </Link>
         <nav className={styles.desktopNav} aria-label="Navegação do membro">
           {links.slice(0, 4).map(({ href, label, icon: Icon }) => <Link href={href} key={href}><Icon size={16} /><span>{label}</span></Link>)}
