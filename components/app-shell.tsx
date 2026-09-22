@@ -1,9 +1,8 @@
 import Link from 'next/link';
 import {
-  Bell, BookOpen, Boxes, CalendarDays, Church, Gift, Heart, Home, LayoutDashboard,
+  Bell, BookOpen, Boxes, CalendarDays, Church, Home, LayoutDashboard,
   Megaphone, MonitorPlay, Music2, Newspaper, Search, Settings, ShieldCheck, MessageCircle, ListOrdered,
-  Sparkles, Users, UsersRound, Baby, ClipboardList, ContactRound, UserRoundCheck,
-  WalletCards
+  Sparkles, Users, UsersRound, Baby, ClipboardList, ContactRound, UserRoundCheck
 } from 'lucide-react';
 import { signOut } from '@/app/actions';
 import { MemberShell } from '@/components/member-shell';
@@ -17,21 +16,9 @@ type Props={
   unreadCount:number;
 };
 
-const memberLinks=[
-  {href:'/dashboard',label:'Início',icon:Home},
-  {href:'/feed',label:'Atualizações',icon:Newspaper},
-  {href:'/chats',label:'Chats',icon:MessageCircle},
-  {href:'/events',label:'Eventos',icon:CalendarDays},
-  {href:'/calendar',label:'Agenda',icon:CalendarDays},
-  {href:'/content',label:'Conteúdos',icon:BookOpen},
-  {href:'/donations',label:'Contribuir',icon:Heart},
-  {href:'/notifications',label:'Notificações',icon:Bell},
-  {href:'/profile',label:'Meu perfil',icon:Users},
-] as const;
-
 const people=[
   {href:'/members',label:'Pessoas',icon:ContactRound},
-  {href:'/visitors',label:'Visitantes',icon:Sparkles},
+  {href:'/visitors',label:'Visitantes & follow-up',icon:Sparkles},
   {href:'/cells',label:'Células',icon:UsersRound},
   {href:'/ministries',label:'Ministérios',icon:Church},
   {href:'/youth',label:'Jovens',icon:UsersRound},
@@ -47,9 +34,8 @@ const operations=[
 ] as const;
 
 const management=[
-  {href:'/finance',label:'Financeiro',icon:WalletCards},
-  {href:'/donations',label:'Dízimos & ofertas',icon:Gift},
   {href:'/communications',label:'Comunicação',icon:Megaphone},
+  {href:'/news',label:'Notícias',icon:Newspaper},
   {href:'/assets',label:'Patrimônio',icon:Boxes},
   {href:'/reports',label:'Relatórios',icon:ClipboardList},
 ] as const;
@@ -68,29 +54,20 @@ export function AppShell({children,churchName,profileName,roleName,roleKey,unrea
     return <MemberShell churchName={churchName} profileName={profileName} unreadCount={unreadCount}>{children}</MemberShell>;
   }
 
-  const isStaff=true;
-
   return <div className="ref-shell">
     <aside className="ref-sidebar">
-      <div className="ref-brand">
-        <span><Church size={15}/></span>
-        <strong>{churchName}</strong>
-      </div>
-
-      {isStaff ? <>
-        <nav className="ref-side-nav ref-side-home">
-          <Link href="/admin"><LayoutDashboard size={14}/><span>Dashboard</span></Link>
-          <Link href="/calendar"><CalendarDays size={14}/><span>Agenda</span></Link>
-        </nav>
-        <NavBlock title="Pessoas" links={people}/>
-        <NavBlock title="Cultos & operação" links={operations}/>
-        <NavBlock title="Gestão" links={management}/>
-        <NavBlock title="Sistema" links={[
-          {href:'/search',label:'Busca global',icon:Search},
-          {href:'/settings',label:'Configurações',icon:Settings},
-        ]}/>
-      </> : <NavBlock title="Minha igreja" links={memberLinks}/>}
-
+      <div className="ref-brand"><span><Church size={15}/></span><strong>{churchName}</strong></div>
+      <nav className="ref-side-nav ref-side-home">
+        <Link href="/admin"><LayoutDashboard size={14}/><span>Dashboard</span></Link>
+        <Link href="/calendar"><CalendarDays size={14}/><span>Agenda</span></Link>
+      </nav>
+      <NavBlock title="Pessoas" links={people}/>
+      <NavBlock title="Cultos & operação" links={operations}/>
+      <NavBlock title="Engajamento & gestão" links={management}/>
+      <NavBlock title="Sistema" links={[
+        {href:'/search',label:'Busca global',icon:Search},
+        {href:'/settings',label:'Configurações',icon:Settings},
+      ]}/>
       <div className="ref-sidebar-user">
         <span className="ref-user-avatar">{profileName.slice(0,1).toUpperCase()}</span>
         <div><strong>{profileName}</strong><span>{roleName}</span></div>
@@ -100,10 +77,7 @@ export function AppShell({children,churchName,profileName,roleName,roleKey,unrea
 
     <main className="ref-main">
       <header className="ref-topbar">
-        <form action="/search" className="ref-global-search">
-          <Search size={13}/>
-          <input name="q" placeholder="Busca"/>
-        </form>
+        <form action="/search" className="ref-global-search"><Search size={13}/><input name="q" placeholder="Busca"/></form>
         <div className="ref-top-actions">
           <Link href="/calendar"><CalendarDays size={14}/></Link>
           <Link href="/notifications" aria-label={unreadCount?`Notificações, ${unreadCount} não lidas`:'Notificações'}><Bell size={14}/>{unreadCount>0&&<i/>}</Link>
@@ -114,11 +88,11 @@ export function AppShell({children,churchName,profileName,roleName,roleKey,unrea
     </main>
 
     <nav className="mobile-nav">
-      <Link href={isStaff?'/admin':'/dashboard'}><Home size={19}/><span>Início</span></Link>
+      <Link href="/admin"><Home size={19}/><span>Início</span></Link>
       <Link href="/events"><CalendarDays size={19}/><span>Eventos</span></Link>
-      {isStaff?<Link href="/members"><Users size={19}/><span>Pessoas</span></Link>:<Link href="/chats"><MessageCircle size={19}/><span>Chats</span></Link>}
+      <Link href="/members"><Users size={19}/><span>Pessoas</span></Link>
+      <Link href="/communications"><Megaphone size={19}/><span>Comunic.</span></Link>
       <Link href="/notifications"><Bell size={19}/><span>Avisos</span></Link>
-      <Link href="/profile"><Users size={19}/><span>Perfil</span></Link>
     </nav>
   </div>;
 }
