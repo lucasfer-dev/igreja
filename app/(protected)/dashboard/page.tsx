@@ -77,7 +77,7 @@ export default async function MemberDashboard(){
           {notifications.data?.length?<div className="member-notice-list">{notifications.data.map(n=><Link href="/notifications" key={n.id} className={!n.read_at?'unread':''}><span><Bell size={15}/></span><div><strong>{n.title}</strong><small>{n.body||'Nova atualização.'}</small></div></Link>)}</div>:<div className="member-empty">Você está em dia.</div>}
         </section>
 
-        <section className="member-prayer"><HeartHandshake size={22}/><div><strong>Como podemos orar por você?</strong><p>Envie um pedido de oração para a equipe pastoral.</p></div><Link href="/profile">Enviar pedido</Link></section>
+        <section className="member-prayer"><HeartHandshake size={22}/><div><strong>Como podemos orar por você?</strong><p>Envie um pedido de oração para a equipe pastoral.</p></div><Link href="/prayer">Enviar pedido</Link></section>
       </aside>
     </section>
   </div>;
