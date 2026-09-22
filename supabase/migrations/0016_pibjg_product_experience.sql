@@ -68,3 +68,20 @@ using (private.has_permission(church_id,'care.manage'))
 with check (private.has_permission(church_id,'care.manage'));
 
 grant select, insert, update, delete on public.visitor_care_requests to authenticated;
+
+alter table public.news_posts
+  add column if not exists category text not null default 'Igreja',
+  add column if not exists audience text not null default 'members'
+    check (audience in ('all','members','leadership'));
+
+drop policy if exists "news tenant read" on public.news_posts;
+create policy "news tenant read" on public.news_posts for select to authenticated
+using (
+  private.is_church_user(church_id)
+  and published = true
+  and published_at <= now()
+  and (
+    audience in ('all','members')
+    or (audience = 'leadership' and private.has_permission(church_id,'communications.manage'))
+  )
+);
