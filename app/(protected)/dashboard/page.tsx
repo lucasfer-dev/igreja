@@ -6,7 +6,7 @@ import {
 import { requireChurch } from '@/lib/auth';
 
 export default async function MemberDashboard(){
-  const {supabase,churchId,user,churchName,churchShortName,churchSettings,profileName,roleKey}=await requireChurch();
+  const {supabase,churchId,user,churchShortName,churchSettings,profileName,roleKey}=await requireChurch();
   const now=new Date().toISOString();
 
   const [events,notifications,member,news,content,rooms]=await Promise.all([
