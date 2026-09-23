@@ -14,6 +14,8 @@ const schema=z.object({
   logoUrl:z.string().url().optional().or(z.literal('')),
   instagramUrl:z.string().url().optional().or(z.literal('')),
   youtubeUrl:z.string().url().optional().or(z.literal('')),
+  radioUrl:z.string().url().optional().or(z.literal('')),
+  radioName:z.string().trim().max(80).optional(),
   address:z.string().trim().max(240).optional(),
   primaryColor:color,
   secondaryColor:color,
@@ -25,7 +27,7 @@ export async function updateChurch(formData: FormData) {
   const parsed=schema.safeParse({
     name:formData.get('name'),shortName:formData.get('shortName'),email:formData.get('email')||'',
     phone:formData.get('phone')||'',whatsapp:formData.get('whatsapp')||'',logoUrl:formData.get('logoUrl')||'',
-    instagramUrl:formData.get('instagramUrl')||'',youtubeUrl:formData.get('youtubeUrl')||'',address:formData.get('address')||'',
+    instagramUrl:formData.get('instagramUrl')||'',youtubeUrl:formData.get('youtubeUrl')||'',radioUrl:formData.get('radioUrl')||'',radioName:formData.get('radioName')||'',address:formData.get('address')||'',
     primaryColor:formData.get('primaryColor')||'#FF7100',secondaryColor:formData.get('secondaryColor')||'#522402',
     accentColor:formData.get('accentColor')||'#FDA83C',backgroundColor:formData.get('backgroundColor')||'#F2E6D7',
   });
@@ -50,6 +52,8 @@ export async function updateChurch(formData: FormData) {
       background_color:parsed.data.backgroundColor,
       instagram_url:parsed.data.instagramUrl||null,
       youtube_url:parsed.data.youtubeUrl||null,
+      radio_url:parsed.data.radioUrl||null,
+      radio_name:parsed.data.radioName||'Rádio PIBJG',
       address:parsed.data.address||null,
     },
     updated_at:new Date().toISOString(),
