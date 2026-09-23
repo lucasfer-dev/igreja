@@ -9,6 +9,8 @@ type ChurchSettings = {
   favicon_url?: string;
   instagram_url?: string;
   youtube_url?: string;
+  radio_url?: string;
+  radio_name?: string;
   address?: string;
   schedule?: unknown;
 };
