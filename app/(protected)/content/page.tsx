@@ -1,5 +1,5 @@
 import { BookOpen, Headphones, PlayCircle, FileText } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { hasPermission, requireChurch } from '@/lib/auth';
 import { createContent } from './actions';
 
 function Icon({type}:{type:string}) {
@@ -11,11 +11,12 @@ function Icon({type}:{type:string}) {
 
 export default async function ContentPage({searchParams}:{searchParams:Promise<{category?:string}>}) {
   const params=await searchParams;
-  const {supabase,churchId,roleKey}=await requireChurch();
+  const context=await requireChurch();
+  const {supabase,churchId}=context;
   let query=supabase.from('content_library').select('*').eq('church_id',churchId).eq('published',true).order('published_at',{ascending:false});
   if(params.category) query=query.eq('category',params.category);
   const {data}=await query.limit(50);
-  const canManage=roleKey!=='member';
+  const canManage=await hasPermission(context,'content.manage');
 
   return <><header className="topbar"><div className="title"><span className="eyebrow">Biblioteca</span><h1>Conteúdos</h1><p>Pregações, estudos, devocionais, vídeos, áudios e materiais.</p></div></header>
   <section className={canManage?'content-grid admin-grid':''}><div className="content-cards">{data?.length?data.map(item=><article className="card content-card" key={item.id}><span className="metric-icon"><Icon type={item.content_type}/></span><div><span className="eyebrow">{item.category||item.content_type}</span><h2>{item.title}</h2><p>{item.description||'Conteúdo da igreja.'}</p>{(item.url||item.media_url)&&<a className="btn secondary" href={item.url||item.media_url} target="_blank" rel="noreferrer">Abrir conteúdo</a>}</div></article>):<div className="card empty">Nenhum conteúdo publicado ainda.</div>}</div>
