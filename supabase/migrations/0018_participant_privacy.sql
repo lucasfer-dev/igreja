@@ -114,26 +114,3 @@ with check (
   )
 );
 
-create policy "volunteer update own schedule"
-on public.volunteer_schedules for update to authenticated
-using (
-  exists (
-    select 1 from public.church_members m
-    where m.id = volunteer_schedules.member_id
-      and m.church_id = volunteer_schedules.church_id
-      and m.auth_user_id = (select auth.uid())
-  )
-)
-with check (
-  exists (
-    select 1 from public.church_members m
-    where m.id = volunteer_schedules.member_id
-      and m.church_id = volunteer_schedules.church_id
-      and m.auth_user_id = (select auth.uid())
-  )
-  and exists (
-    select 1 from public.events e
-    where e.id = volunteer_schedules.event_id
-      and e.church_id = volunteer_schedules.church_id
-  )
-);
