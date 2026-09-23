@@ -2,8 +2,8 @@ import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import {
   Baby, Bell, Boxes, CalendarDays, Church, ContactRound, HeartHandshake, Home,
-  LayoutDashboard, ListOrdered, Megaphone, MonitorPlay, Music2, Newspaper, Search,
-  Settings, ShieldCheck, Sparkles, UserRoundCheck, Users, UsersRound, ClipboardList
+  LayoutDashboard, ListOrdered, Megaphone, MonitorPlay, Music2, Search,
+  Settings, ShieldCheck, Sparkles, UserRoundCheck, UsersRound, ClipboardList
 } from 'lucide-react';
 import { signOut } from '@/app/actions';
 import { MemberShell } from '@/components/member-shell';
