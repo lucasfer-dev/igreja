@@ -1,7 +1,7 @@
 import { Bell, Megaphone, MessageCircle, Newspaper, Plus, Send, UsersRound, Zap } from 'lucide-react';
 import { requirePermission } from '@/lib/auth';
 import { createFollowupRule, publishAnnouncement, publishNews } from './actions';
-import { whatsappLink } from '@/lib/whatsapp';
+import { WhatsAppInviteComposer } from '@/components/whatsapp-invite-composer';
 
 const audienceLabels:Record<string,string>={church:'Toda a igreja',unit:'Unidade',cell:'Célula',ministry:'Ministério',event:'Evento',person:'Pessoa'};
 
@@ -15,7 +15,7 @@ export default async function CommunicationsPage(){
     supabase.from('cells').select('id,name').eq('church_id',churchId).eq('active',true).order('name'),
     supabase.from('ministries').select('id,name').eq('church_id',churchId).eq('active',true).order('name'),
     supabase.from('events').select('id,title,starts_at,address').eq('church_id',churchId).gte('starts_at',now).order('starts_at').limit(20),
-    supabase.from('church_members').select('id,full_name').eq('church_id',churchId).neq('status','inactive').not('auth_user_id','is',null).order('full_name').limit(250),
+    supabase.from('church_members').select('id,full_name,phone,whatsapp').eq('church_id',churchId).neq('status','inactive').order('full_name').limit(250),
     supabase.from('news_posts').select('id,title,published_at,featured,category,audience').eq('church_id',churchId).order('published_at',{ascending:false}).limit(8),
     supabase.from('whatsapp_followup_rules').select('id,name,trigger_stage,delay_hours,template_name,active').eq('church_id',churchId).order('created_at',{ascending:false}),
     supabase.from('whatsapp_outbox').select('status').eq('church_id',churchId)
@@ -97,11 +97,21 @@ export default async function CommunicationsPage(){
     </section>
 
     <section className="panel" id="convites">
-      <div className="section-title"><div><span className="section-eyebrow">Compartilhamento</span><h2>Convites pelo WhatsApp</h2></div><MessageCircle size={18}/></div>
-      {events.data?.length?<div className="event-registration-list">{events.data.map(event=>{
-        const message=`Olá! A ${churchName} quer convidar você para ${event.title}, em ${new Date(event.starts_at).toLocaleString('pt-BR')}${event.address?' — '+event.address:''}. Será muito bom ter você com a gente!`;
-        return <div key={event.id}><span className="communication-icon"><CalendarInvite/></span><div><strong>{event.title}</strong><span>{new Date(event.starts_at).toLocaleString('pt-BR')}</span></div><a className="small-action" href={whatsappLink(null,message)} target="_blank" rel="noreferrer">Criar convite</a></div>;
-      })}</div>:<div className="empty">Cadastre um evento para gerar convites.</div>}
+      <div className="section-title"><div><span className="section-eyebrow">Relacionamento</span><h2>Convites pelo WhatsApp</h2><p>Convide membros para os próximos eventos sem sair da central de comunicação.</p></div><MessageCircle size={18}/></div>
+      <WhatsAppInviteComposer
+        churchName={churchName}
+        members={(members.data||[]).filter(member=>member.whatsapp||member.phone).map(member=>({
+          id:member.id,
+          fullName:member.full_name,
+          phone:member.whatsapp||member.phone||''
+        }))}
+        events={(events.data||[]).map(event=>({
+          id:event.id,
+          title:event.title,
+          startsAt:event.starts_at,
+          address:event.address
+        }))}
+      />
     </section>
   </>;
 }
