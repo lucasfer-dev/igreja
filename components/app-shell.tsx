@@ -23,38 +23,40 @@ type Props={
   unreadCount:number;
   churchRadioUrl?:string|null;
   churchRadioName:string;
+  permissions:string[];
 };
 
 const people=[
-  {href:'/members',label:'Pessoas',icon:ContactRound},
-  {href:'/visitors',label:'Visitantes & follow-up',icon:Sparkles},
-  {href:'/care',label:'Cuidado',icon:HeartHandshake},
-  {href:'/cells',label:'Pequenos grupos',icon:UsersRound},
-  {href:'/ministries',label:'Ministérios',icon:Church},
-  {href:'/youth',label:'Jovens',icon:UsersRound},
-  {href:'/kids',label:'Kids',icon:Baby},
+  {href:'/members',label:'Pessoas',icon:ContactRound,permission:'members.read'},
+  {href:'/visitors',label:'Visitantes & follow-up',icon:Sparkles,permission:'visitors.read'},
+  {href:'/care',label:'Cuidado',icon:HeartHandshake,permission:'care.read'},
+  {href:'/cells',label:'Pequenos grupos',icon:UsersRound,permission:'cells.read'},
+  {href:'/ministries',label:'Ministérios',icon:Church,permission:'ministries.read'},
+  {href:'/youth',label:'Jovens',icon:UsersRound,permission:'members.read'},
+  {href:'/kids',label:'Kids',icon:Baby,permission:'kids.read'},
 ] as const;
 
 const operations=[
-  {href:'/events',label:'Eventos',icon:CalendarDays},
-  {href:'/service-order',label:'Ordem do culto',icon:ListOrdered},
-  {href:'/volunteers',label:'Escalas',icon:UserRoundCheck},
-  {href:'/worship',label:'Louvor',icon:Music2},
-  {href:'/projection',label:'Projeção',icon:MonitorPlay},
+  {href:'/events',label:'Eventos',icon:CalendarDays,permission:'events.read'},
+  {href:'/service-order',label:'Ordem do culto',icon:ListOrdered,permission:'service_order.read'},
+  {href:'/volunteers',label:'Escalas',icon:UserRoundCheck,permission:'ministries.read'},
+  {href:'/worship',label:'Louvor',icon:Music2,permission:'worship.read'},
+  {href:'/projection',label:'Projeção',icon:MonitorPlay,permission:'worship.read'},
 ] as const;
 
 const management=[
-  {href:'/communications',label:'Comunicação',icon:Megaphone},
-  {href:'/news',label:'Notícias',icon:Newspaper},
-  {href:'/assets',label:'Patrimônio',icon:Boxes},
-  {href:'/reports',label:'Relatórios',icon:ClipboardList},
+  {href:'/communications',label:'Comunicação',icon:Megaphone,permission:'communications.manage'},
+  {href:'/assets',label:'Patrimônio',icon:Boxes,permission:'assets.read'},
+  {href:'/reports',label:'Relatórios',icon:ClipboardList,permission:'reports.read'},
 ] as const;
 
-function NavBlock({title,links}:{title:string;links:readonly any[]}){
+function NavBlock({title,links,permissions}:{title:string;links:readonly any[];permissions:Set<string>}){
+  const visible=links.filter(link=>!link.permission||permissions.has(link.permission));
+  if(!visible.length) return null;
   return <section className="ref-side-section">
     <div className="ref-side-title">{title}</div>
     <nav className="ref-side-nav">
-      {links.map(({href,label,icon:Icon})=><Link href={href} key={href}><Icon size={14}/><span>{label}</span></Link>)}
+      {visible.map(({href,label,icon:Icon})=><Link href={href} key={href}><Icon size={14}/><span>{label}</span></Link>)}
     </nav>
   </section>;
 }
@@ -63,8 +65,12 @@ export function AppShell(props:Props){
   const {
     children,churchName,churchShortName,churchLogo,churchColor,churchSecondaryColor,
     churchAccentColor,churchBackgroundColor,profileName,roleName,roleKey,unreadCount,
-    churchRadioUrl,churchRadioName
+    churchRadioUrl,churchRadioName,permissions
   }=props;
+
+  const permissionSet=new Set(permissions);
+  const canSearch=['members.read','visitors.read','cells.read','ministries.read','communications.manage','church.manage'].some(p=>permissionSet.has(p));
+  const canUseCalendar=['events.manage','members.read','cells.read','ministries.read'].some(p=>permissionSet.has(p));
 
   const themeStyle={
     '--brand':churchColor,
@@ -96,15 +102,15 @@ export function AppShell(props:Props){
         <div><strong>{churchShortName} Gestão</strong><small>{churchName}</small></div>
       </div>
       <nav className="ref-side-nav ref-side-home">
-        <Link href="/admin"><LayoutDashboard size={14}/><span>Central da igreja</span></Link>
-        <Link href="/calendar"><CalendarDays size={14}/><span>Agenda PIBJG</span></Link>
+        {permissionSet.has('church.manage')&&<Link href="/admin"><LayoutDashboard size={14}/><span>Central da igreja</span></Link>}
+        {canUseCalendar&&<Link href="/calendar"><CalendarDays size={14}/><span>Agenda PIBJG</span></Link>}
       </nav>
-      <NavBlock title="Pessoas & cuidado" links={people}/>
-      <NavBlock title="Cultos & operação" links={operations}/>
-      <NavBlock title="Comunicação & gestão" links={management}/>
-      <NavBlock title="Sistema" links={[
-        {href:'/search',label:'Busca global',icon:Search},
-        {href:'/settings',label:'Configurações',icon:Settings},
+      <NavBlock title="Pessoas & cuidado" links={people} permissions={permissionSet}/>
+      <NavBlock title="Cultos & operação" links={operations} permissions={permissionSet}/>
+      <NavBlock title="Comunicação & gestão" links={management} permissions={permissionSet}/>
+      <NavBlock title="Sistema" permissions={permissionSet} links={[
+        ...(canSearch?[{href:'/search',label:'Busca global',icon:Search}]:[]),
+        {href:'/settings',label:'Configurações',icon:Settings,permission:'church.manage'},
       ]}/>
       <div className="ref-sidebar-user">
         <span className="ref-user-avatar">{profileName.slice(0,1).toUpperCase()}</span>
@@ -115,9 +121,9 @@ export function AppShell(props:Props){
 
     <main className="ref-main">
       <header className="ref-topbar">
-        <form action="/search" className="ref-global-search"><Search size={13}/><input name="q" placeholder="Buscar na igreja" aria-label="Buscar na igreja"/></form>
+        {canSearch?<form action="/search" className="ref-global-search"><Search size={13}/><input name="q" placeholder="Buscar na igreja" aria-label="Buscar na igreja"/></form>:<span/>}
         <div className="ref-top-actions">
-          <Link href="/calendar" aria-label="Abrir agenda"><CalendarDays size={14}/></Link>
+          {canUseCalendar&&<Link href="/calendar" aria-label="Abrir agenda"><CalendarDays size={14}/></Link>}
           <Link href="/notifications" aria-label={unreadCount?`Notificações, ${unreadCount} não lidas`:'Notificações'}><Bell size={14}/>{unreadCount>0&&<i/>}</Link>
           <span className="ref-top-avatar" aria-label={profileName}>{profileName.slice(0,1).toUpperCase()}</span>
         </div>
@@ -126,10 +132,10 @@ export function AppShell(props:Props){
     </main>
 
     <nav className="mobile-nav" aria-label="Navegação da gestão">
-      <Link href="/admin"><Home size={19}/><span>Início</span></Link>
-      <Link href="/visitors"><Sparkles size={19}/><span>Visitantes</span></Link>
-      <Link href="/events"><CalendarDays size={19}/><span>Agenda</span></Link>
-      <Link href="/communications"><Megaphone size={19}/><span>Comunicar</span></Link>
+      {permissionSet.has('church.manage')&&<Link href="/admin"><Home size={19}/><span>Início</span></Link>}
+      {permissionSet.has('visitors.read')&&<Link href="/visitors"><Sparkles size={19}/><span>Visitantes</span></Link>}
+      {permissionSet.has('events.read')&&<Link href="/events"><CalendarDays size={19}/><span>Agenda</span></Link>}
+      {permissionSet.has('communications.manage')&&<Link href="/communications"><Megaphone size={19}/><span>Comunicar</span></Link>}
       <Link href="/notifications"><Bell size={19}/><span>Avisos</span></Link>
     </nav>
   </div>;
