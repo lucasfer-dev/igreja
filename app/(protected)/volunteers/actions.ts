@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 
 export async function createSchedule(formData:FormData){
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('ministries.manage');
   const eventId=String(formData.get('event_id')||''); const memberId=String(formData.get('member_id')||'');
   const ministryId=String(formData.get('ministry_id')||''); const functionName=String(formData.get('function_name')||'').trim();
   if(!eventId||!memberId||!functionName)return;
@@ -22,7 +22,7 @@ export async function createSchedule(formData:FormData){
 
 export async function updateScheduleStatus(id:string,formData:FormData){
   const status=String(formData.get('status')||'pending'); if(!['pending','confirmed','declined','replacement_requested'].includes(status))return;
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('ministries.manage');
   await supabase.from('volunteer_schedules').update({status}).eq('church_id',churchId).eq('id',id);
   revalidatePath('/volunteers'); revalidatePath('/dashboard');
 }
