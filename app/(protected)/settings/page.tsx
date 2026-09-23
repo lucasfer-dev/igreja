@@ -2,7 +2,7 @@ import { Church, Palette, Smartphone } from 'lucide-react';
 import { requirePermission } from '@/lib/auth';
 import { updateChurch } from './actions';
 
-type TenantSettings={short_name?:string;accent_color?:string;background_color?:string;instagram_url?:string|null;youtube_url?:string|null;address?:string|null};
+type TenantSettings={short_name?:string;accent_color?:string;background_color?:string;instagram_url?:string|null;youtube_url?:string|null;radio_url?:string|null;radio_name?:string|null;address?:string|null};
 
 export default async function SettingsPage() {
   const { supabase, churchId } = await requirePermission('church.manage');
@@ -46,6 +46,8 @@ export default async function SettingsPage() {
           <div className="form-row"><div className="field"><label htmlFor="email">E-mail</label><input id="email" name="email" type="email" defaultValue={church?.email||''}/></div><div className="field"><label htmlFor="phone">Telefone</label><input id="phone" name="phone" inputMode="tel" defaultValue={church?.phone||''}/></div></div>
           <div className="form-row"><div className="field"><label htmlFor="whatsapp">WhatsApp</label><input id="whatsapp" name="whatsapp" inputMode="tel" defaultValue={church?.whatsapp||''}/></div><div className="field"><label htmlFor="address">Endereço</label><input id="address" name="address" defaultValue={settings.address||''}/></div></div>
           <div className="form-row"><div className="field"><label htmlFor="instagramUrl">Instagram</label><input id="instagramUrl" name="instagramUrl" type="url" defaultValue={settings.instagram_url||''}/></div><div className="field"><label htmlFor="youtubeUrl">YouTube</label><input id="youtubeUrl" name="youtubeUrl" type="url" defaultValue={settings.youtube_url||''}/></div></div>
+          <div className="form-section-title"><strong>Rádio da igreja</strong><span>Stream exibido no aplicativo dos membros.</span></div>
+          <div className="form-row"><div className="field"><label htmlFor="radioName">Nome da rádio</label><input id="radioName" name="radioName" defaultValue={settings.radio_name||'Rádio PIBJG'} placeholder="Rádio PIBJG"/></div><div className="field"><label htmlFor="radioUrl">URL do stream</label><input id="radioUrl" name="radioUrl" type="url" defaultValue={settings.radio_url||''} placeholder="https://.../stream.mp3"/></div></div>
 
           <button className="primary-submit" type="submit">Salvar identidade</button>
         </form>
