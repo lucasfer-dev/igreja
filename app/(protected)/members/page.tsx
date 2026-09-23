@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { Cake, Search, UserPlus, Users, UserRoundCheck, UserRoundX } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { hasPermission, requirePermission } from '@/lib/auth';
 
 export default async function Members({searchParams}:{searchParams:Promise<{q?:string;status?:string}>}){
   const params=await searchParams;
-  const {supabase,churchId}=await requireChurch();
+  const context=await requirePermission('members.read');
+  const {supabase,churchId}=context;
+  const canCreate=await hasPermission(context,'members.create');
 
   let query=supabase.from('church_members')
     .select('id,full_name,email,phone,status,birth_date,created_at')
@@ -26,7 +28,7 @@ export default async function Members({searchParams}:{searchParams:Promise<{q?:s
   return <>
     <header className="page-heading">
       <div><span className="page-kicker">Pessoas</span><h1>Diretório de pessoas</h1><p>Uma visão única de membros, líderes, contatos e histórico de participação.</p></div>
-      <Link className="primary-action" href="/members/new"><UserPlus size={16}/> Adicionar pessoa</Link>
+      {canCreate&&<Link className="primary-action" href="/members/new"><UserPlus size={16}/> Adicionar pessoa</Link>}
     </header>
 
     <section className="people-summary">

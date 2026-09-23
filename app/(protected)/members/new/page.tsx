@@ -1,6 +1,8 @@
+import { requirePermission } from '@/lib/auth';
 import { createMember } from '../actions';
 
 export default async function NewMember({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  await requirePermission('members.create');
   const params = await searchParams;
   return <><header className="topbar"><div className="title"><span className="eyebrow">Pessoas</span><h1>Novo membro</h1><p>Crie um cadastro completo para acompanhamento da pessoa.</p></div></header><section className="card form-card">{params.error&&<p className="alert">{params.error}</p>}<form action={createMember} className="form">
     <div className="field"><label htmlFor="full_name">Nome completo</label><input id="full_name" name="full_name" required/></div>

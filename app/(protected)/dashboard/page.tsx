@@ -65,7 +65,7 @@ export default async function MemberDashboard(){
     <section className="member-shortcuts member-shortcuts-five">
       <Link href="/events"><span><CalendarDays size={21}/></span><strong>Eventos</strong><small>Agenda da igreja</small></Link>
       <Link href="/news"><span><Newspaper size={21}/></span><strong>Notícias</strong><small>Novidades da PIBJG</small></Link>
-      <a href="#radio"><span><Radio size={21}/></span><strong>Rádio</strong><small>Ouça a igreja</small></a>
+      <a href="#radio-player"><span><Radio size={21}/></span><strong>Rádio</strong><small>Ouça a igreja</small></a>
       <Link href="/chats"><span><MessageCircle size={21}/></span><strong>Comunidade</strong><small>Grupos e conversas</small></Link>
       <Link href="/notifications"><span><Bell size={21}/></span><strong>Avisos</strong><small>{unread} não lido(s)</small></Link>
     </section>
@@ -96,7 +96,7 @@ export default async function MemberDashboard(){
             <strong>{radioName}</strong>
             <p>{radioUrl?'Ouça a programação da igreja diretamente pelo aplicativo.':'Configure o endereço da transmissão em PIBJG Gestão para liberar o player aos membros.'}</p>
           </div>
-          {radioUrl?<audio controls preload="none" src={radioUrl}>Seu navegador não suporta reprodução de áudio.</audio>:<Link href={roleKey!=='member'?'/settings':'/events'}>{roleKey!=='member'?'Configurar rádio':'Ver programação'}</Link>}
+          {radioUrl?(roleKey==='member'?<a href="#radio-player">Abrir player</a>:<Link href="/settings">Gerenciar rádio</Link>):<Link href={roleKey!=='member'?'/settings':'/events'}>{roleKey!=='member'?'Configurar rádio':'Ver programação'}</Link>}
         </section>
 
         <section className="member-panel">

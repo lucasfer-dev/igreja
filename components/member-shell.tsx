@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import { Bell, CalendarDays, Church, Home, LogOut, MessageCircle, Newspaper, UserRound } from 'lucide-react';
 import { signOut } from '@/app/actions';
+import { MemberRadioPlayer } from '@/components/member-radio-player';
 import styles from './member-shell.module.css';
 
 type Props = {
@@ -15,6 +16,8 @@ type Props = {
   churchBackgroundColor: string;
   profileName: string;
   unreadCount: number;
+  radioUrl?: string | null;
+  radioName: string;
 };
 
 const links = [
@@ -27,7 +30,7 @@ const links = [
 
 export function MemberShell({
   children,churchName,churchShortName,churchLogo,churchColor,churchSecondaryColor,
-  churchAccentColor,churchBackgroundColor,profileName,unreadCount
+  churchAccentColor,churchBackgroundColor,profileName,unreadCount,radioUrl,radioName
 }: Props) {
   const themeStyle={
     '--brand':churchColor,
@@ -40,7 +43,7 @@ export function MemberShell({
     <div className={styles.shell} style={themeStyle}>
       <header className={styles.header}>
         <Link href="/dashboard" className={styles.brand}>
-          <span>{churchLogo?<img src={churchLogo} alt=""/>:<Church size={18} />}</span>
+          <span>{churchLogo?<img src={churchLogo} alt={churchShortName}/>:<Church size={18} />}</span>
           <div><strong>{churchShortName}</strong><small>{churchName}</small></div>
         </Link>
         <nav className={styles.desktopNav} aria-label="Navegação do membro">
@@ -55,6 +58,7 @@ export function MemberShell({
         </div>
       </header>
       <main className={styles.main}>{children}</main>
+      {radioUrl&&<MemberRadioPlayer src={radioUrl} name={radioName}/>} 
       <nav className={styles.bottomNav} aria-label="Navegação principal">
         {links.map(({ href, label, icon: Icon }) => <Link href={href} key={href}><Icon size={20} /><span>{label}</span></Link>)}
       </nav>

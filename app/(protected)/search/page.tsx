@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { Search } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requireAnyPermission } from '@/lib/auth';
 
 export default async function SearchPage({searchParams}:{searchParams:Promise<{q?:string}>}) {
-  const params=await searchParams; const q=(params.q||'').trim(); const {supabase,churchId}=await requireChurch();
+  const params=await searchParams; const q=(params.q||'').trim(); const {supabase,churchId}=await requireAnyPermission(['members.read','visitors.read','cells.read','ministries.read','communications.manage','church.manage']);
   let results:{type:string;title:string;subtitle:string;href:string}[]=[];
   if(q.length>=2){
     const [members,visitors,events,cells,ministries,content]=await Promise.all([

@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { ArrowLeft, UsersRound } from 'lucide-react';
+import { requirePermission } from '@/lib/auth';
 import { createCell } from '../actions';
 
 const days=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
 export default async function NewCell({searchParams}:{searchParams:Promise<{error?:string}>}){
+  await requirePermission('cells.manage');
   const params=await searchParams;
   return <div className="creation-page">
     <Link className="creation-back" href="/cells"><ArrowLeft size={15}/> Voltar para células</Link>
