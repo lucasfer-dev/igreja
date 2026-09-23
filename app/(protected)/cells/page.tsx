@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import { CalendarDays, MapPin, Plus, Search, UserRound, UsersRound } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { hasPermission, requirePermission } from '@/lib/auth';
 
 const days=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
 export default async function Cells({searchParams}:{searchParams:Promise<{q?:string;day?:string}>}){
   const params=await searchParams;
-  const {supabase,churchId}=await requireChurch();
+  const context=await requirePermission('cells.read');
+  const {supabase,churchId}=context;
+  const canManage=await hasPermission(context,'cells.manage');
 
   let cellsQuery=supabase.from('cells')
     .select('id,name,weekday,starts_at,capacity,active,address,leader_member_id')
@@ -33,7 +35,7 @@ export default async function Cells({searchParams}:{searchParams:Promise<{q?:str
   return <>
     <header className="module-heading">
       <div><span className="module-kicker">Comunidade</span><h1>Células</h1><p>Acompanhe grupos, lideranças, participantes e frequência em uma única visão.</p></div>
-      <Link className="module-primary" href="/cells/new"><Plus size={16}/> Nova célula</Link>
+      {canManage&&<Link className="module-primary" href="/cells/new"><Plus size={16}/> Nova célula</Link>}
     </header>
 
     <section className="module-summary-row">
@@ -65,6 +67,6 @@ export default async function Cells({searchParams}:{searchParams:Promise<{q?:str
           {capacity>0&&<div className="cell-capacity"><span><i style={{width:occupancy+'%'}}/></span><small>{occupancy}% ocupada</small></div>}
         </Link>
       })}
-    </section>:<section className="module-empty-state"><UsersRound size={34}/><h2>Nenhuma célula cadastrada</h2><p>Crie a primeira célula para começar a acompanhar pessoas e encontros.</p><Link href="/cells/new">Criar primeira célula</Link></section>}
+    </section>:<section className="module-empty-state"><UsersRound size={34}/><h2>Nenhuma célula cadastrada</h2><p>{canManage?'Crie a primeira célula para começar a acompanhar pessoas e encontros.':'Nenhuma célula está disponível para consulta.'}</p>{canManage&&<Link href="/cells/new">Criar primeira célula</Link>}</section>}
   </>;
 }
