@@ -3,13 +3,16 @@ import { requireChurch } from '@/lib/auth';
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const context = await requireChurch();
-  const { count: unreadCount } = await context.supabase
+  const [{ count: unreadCount }, { data: permissionRows }] = await Promise.all([
+    context.supabase
     .from('notifications')
     .select('id', { count: 'exact', head: true })
     .eq('church_id', context.churchId)
     .eq('user_id', context.user.id)
     .is('read_at', null)
-    .is('archived_at', null);
+    .is('archived_at', null),
+    context.supabase.from('role_permissions').select('permission_key').eq('role_id', context.roleId),
+  ]);
 
   return (
     <AppShell
@@ -26,6 +29,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       unreadCount={unreadCount || 0}
       churchRadioUrl={context.churchSettings.radio_url}
       churchRadioName={context.churchSettings.radio_name || `Rádio ${context.churchShortName}`}
+      permissions={(permissionRows || []).map(row => row.permission_key)}
     >
       {children}
     </AppShell>
