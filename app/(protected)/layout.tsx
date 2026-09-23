@@ -24,6 +24,8 @@ export default async function ProtectedLayout({ children }: { children: React.Re
       roleName={context.roleName}
       roleKey={context.roleKey}
       unreadCount={unreadCount || 0}
+      churchRadioUrl={context.churchSettings.radio_url}
+      churchRadioName={context.churchSettings.radio_name || `Rádio ${context.churchShortName}`}
     >
       {children}
     </AppShell>
