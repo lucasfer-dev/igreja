@@ -1,10 +1,10 @@
 import { CalendarDays, CheckCircle2, Clock3, RefreshCw, UserRoundCheck, XCircle } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth';
 import { createSchedule, updateScheduleStatus } from './actions';
 
 export default async function VolunteersPage({searchParams}:{searchParams:Promise<{error?:string}>}){
   const qs=await searchParams;
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requirePermission('ministries.manage');
   const [{data:schedules},{data:members},{data:ministries},{data:events}]=await Promise.all([
     supabase.from('volunteer_schedules').select('id,event_id,function_name,starts_at,status,church_members(full_name),ministries(name),events(title)').eq('church_id',churchId).gte('starts_at',new Date(Date.now()-7*86400000).toISOString()).order('starts_at').limit(120),
     supabase.from('church_members').select('id,full_name').eq('church_id',churchId).neq('status','inactive').order('full_name'),
