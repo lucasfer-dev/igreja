@@ -64,9 +64,9 @@ export const requireChurch = cache(async function requireChurch() {
   };
 });
 
-export async function requirePermission(permission: string) {
-  const context = await requireChurch();
+export type ChurchContext = Awaited<ReturnType<typeof requireChurch>>;
 
+export async function hasPermission(context: ChurchContext, permission: string) {
   const { data: granted } = await context.supabase
     .from('role_permissions')
     .select('permission_key')
@@ -74,12 +74,11 @@ export async function requirePermission(permission: string) {
     .eq('permission_key', permission)
     .maybeSingle();
 
-  if (!granted) redirect('/dashboard?error=' + encodeURIComponent('Você não tem permissão para acessar esta área.'));
-  return context;
+  return Boolean(granted);
 }
 
-export async function requireAnyPermission(permissions: string[]) {
-  const context = await requireChurch();
+export async function hasAnyPermission(context: ChurchContext, permissions: string[]) {
+  if (!permissions.length) return false;
 
   const { data: granted } = await context.supabase
     .from('role_permissions')
@@ -88,6 +87,21 @@ export async function requireAnyPermission(permissions: string[]) {
     .in('permission_key', permissions)
     .limit(1);
 
-  if (!granted?.length) redirect('/dashboard?error=' + encodeURIComponent('Você não tem permissão para acessar esta área.'));
+  return Boolean(granted?.length);
+}
+
+export async function requirePermission(permission: string) {
+  const context = await requireChurch();
+  if (!(await hasPermission(context, permission))) {
+    redirect('/dashboard?error=' + encodeURIComponent('Você não tem permissão para acessar esta área.'));
+  }
+  return context;
+}
+
+export async function requireAnyPermission(permissions: string[]) {
+  const context = await requireChurch();
+  if (!(await hasAnyPermission(context, permissions))) {
+    redirect('/dashboard?error=' + encodeURIComponent('Você não tem permissão para acessar esta área.'));
+  }
   return context;
 }
