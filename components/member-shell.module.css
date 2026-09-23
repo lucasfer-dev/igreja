@@ -214,3 +214,19 @@
 .header { background: rgba(255, 253, 249, .95); }
 .bottomNav { background: rgba(255, 253, 249, .98); border-color: #eadfd5; }
 .bottomNav a:hover { color: var(--brand-dark, #522402); background: var(--brand-soft, #fff0e3); }
+
+
+/* PIBJG member shell */
+.shell{background:#fffaf5;color:#3a2418}
+.header{border-bottom-color:#eadbcf;background:rgba(255,250,245,.96)}
+.brand>span{background:#fff0e3;color:var(--brand,#ff7100)}
+.brand strong{color:var(--brand-dark,#522402)}
+.brand small{color:#9c7a64}
+.desktopNav{border-color:#eadbcf;background:#fffdf9}
+.desktopNav a{color:#745d4e}
+.desktopNav a:hover{background:#fff0e3;color:var(--brand-dark,#522402)}
+.notification,.avatar,.signout button{border-color:#eadbcf;background:#fffdf9;color:#745d4e}
+.avatar{color:var(--brand-dark,#522402);background:#f2e6d7}
+.bottomNav{border-color:#eadbcf;background:rgba(255,250,245,.98);box-shadow:0 16px 42px rgba(82,36,2,.12)}
+.bottomNav a{color:#7f6859}
+.bottomNav a:hover{background:#fff0e3;color:var(--brand-dark,#522402)}
