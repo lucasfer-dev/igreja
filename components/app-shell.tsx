@@ -21,6 +21,8 @@ type Props={
   roleName:string;
   roleKey:string;
   unreadCount:number;
+  churchRadioUrl?:string|null;
+  churchRadioName:string;
 };
 
 const people=[
@@ -60,7 +62,8 @@ function NavBlock({title,links}:{title:string;links:readonly any[]}){
 export function AppShell(props:Props){
   const {
     children,churchName,churchShortName,churchLogo,churchColor,churchSecondaryColor,
-    churchAccentColor,churchBackgroundColor,profileName,roleName,roleKey,unreadCount
+    churchAccentColor,churchBackgroundColor,profileName,roleName,roleKey,unreadCount,
+    churchRadioUrl,churchRadioName
   }=props;
 
   const themeStyle={
@@ -81,13 +84,15 @@ export function AppShell(props:Props){
       churchBackgroundColor={churchBackgroundColor}
       profileName={profileName}
       unreadCount={unreadCount}
+      radioUrl={churchRadioUrl}
+      radioName={churchRadioName}
     >{children}</MemberShell>;
   }
 
   return <div className="ref-shell pibjg-shell" style={themeStyle}>
     <aside className="ref-sidebar">
       <div className="ref-brand">
-        <span>{churchLogo?<img src={churchLogo} alt=""/>:<Church size={17}/>}</span>
+        <span>{churchLogo?<img src={churchLogo} alt={churchShortName}/>:<Church size={17}/>}</span>
         <div><strong>{churchShortName} Gestão</strong><small>{churchName}</small></div>
       </div>
       <nav className="ref-side-nav ref-side-home">
