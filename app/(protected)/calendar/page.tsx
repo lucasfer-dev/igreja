@@ -1,8 +1,8 @@
 import { CalendarDays } from 'lucide-react';
-import { requireChurch } from '@/lib/auth';
+import { requireAnyPermission } from '@/lib/auth';
 
 export default async function CalendarPage() {
-  const {supabase,churchId}=await requireChurch();
+  const {supabase,churchId}=await requireAnyPermission(['events.manage','members.read','cells.read','ministries.read']);
   const now=new Date(); const until=new Date(now); until.setDate(until.getDate()+60);
   const [events,cells,schedules,members]=await Promise.all([
     supabase.from('events').select('id,title,starts_at,address,status').eq('church_id',churchId).gte('starts_at',now.toISOString()).lte('starts_at',until.toISOString()).order('starts_at'),
